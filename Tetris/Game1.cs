@@ -75,6 +75,7 @@ namespace Tetris
                 Exit();
 
             // TODO: Add your update logic here
+
             if (currentElement.Y < background.Y + background.Height - currentElement.Height - (blocks[currentColumn].Count * 50)) // TPDP: fix this
             {
                 currentElement.Y += 10;
@@ -83,6 +84,53 @@ namespace Tetris
             {
                 blocks[currentColumn].Enqueue(Tuple.Create(currentElement, currentElementTexture));
 
+                // find the minimum row
+                int minRow = blocks[0].Count;
+                for (int i = 1; i < blocks.Length; i++)
+                {
+                    if (blocks[i].Count < minRow)
+                    {
+                        minRow = blocks[i].Count;
+                    }
+                }
+
+                for (int i = 0; i < minRow; i++)
+                {
+                    // check if there is a full row
+                    bool isRowFull = false;
+                    for (int j = 0; j < blocks.Length; j++)
+                    {
+                        if (blocks[i] != null)
+                        {
+                            if (j >= blocks.Length - 1)
+                            {
+                                isRowFull = true;
+                            }
+                        }
+                        else break;
+                    }
+
+                    // remove the row
+                    if (isRowFull)
+                    {
+                        for (int j = 0; j < blocks.Length; j++)
+                        {
+                            blocks[j].Dequeue();
+
+                            // move the blocks down
+                            for (int k = 0; k < blocks[j].Count; k++)
+                            {
+                                // TPDP: fix this
+                                var g = blocks[j].Dequeue();
+                                var p = g.Item1;
+                                p.Y += 50;
+                                blocks[j].Enqueue(Tuple.Create(p, g.Item2));
+                            }
+                        }
+                    }
+                }
+
+                // when reaches the top border, the game ends
                 if (blocks[currentColumn].Count == rows)
                 {
                     throw new NotImplementedException(); // TODO: fix this
