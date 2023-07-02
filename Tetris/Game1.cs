@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Tetris
@@ -18,8 +19,10 @@ namespace Tetris
         Texture2D currentElementTexture;
         int columns;
         int rows;
+        int currentColumn;
 
-        List<Tuple<Rectangle, Texture2D>> elements;
+        Queue<Tuple<Rectangle, Texture2D>>[] blocks;
+        //List<Queue<Tuple<Rectangle, Texture2D>>> elements;
 
         public Game1()
         {
@@ -38,9 +41,15 @@ namespace Tetris
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            elements = new();
 
             // TODO: use this.Content to load your game content here
+
+            blocks = new Queue<Tuple<Rectangle, Texture2D>>[6]; // TODO: fix this
+            for (int i = 0; i < blocks.Length; i++)
+            {
+                blocks[i] = new();
+            }
+
             int backgroundWidth = 300;
             int backgroundHeight = 400;
             background = new(
@@ -50,11 +59,10 @@ namespace Tetris
             backgroundTexture = new(GraphicsDevice, 1, 1);
             backgroundTexture.SetData(new Color[] { Color.White });
 
-            int currentColumn = GenerateColumnNumber();
+            currentColumn = GenerateColumnNumber();
             Tuple<Rectangle, Texture2D> block = CreateBlock(currentColumn);
             var (element, texture) = block;
 
-            //elements.Add(Tuple.Create(block.Item1, block.Item2));
             currentElement = element;
             currentElementTexture = texture;
 
@@ -74,19 +82,15 @@ namespace Tetris
             }
             else
             {
-                elements.Add(Tuple.Create(currentElement, currentElementTexture));
+                blocks[currentColumn].Enqueue(Tuple.Create(currentElement, currentElementTexture));
 
-                int currentColumn = GenerateColumnNumber();
+                currentColumn = GenerateColumnNumber();
                 Tuple<Rectangle, Texture2D> block = CreateBlock(currentColumn);
                 var (element, texture) = block;
 
                 currentElement = element;
                 currentElementTexture = texture;
             }
-
-            // randomly choose a column
-            //int currentColumn = GenerateColumnNumber();
-
 
             base.Update(gameTime);
         }
@@ -100,9 +104,12 @@ namespace Tetris
 
             _spriteBatch.Draw(backgroundTexture, background, Color.Red);
 
-            foreach (var element in elements)
+            foreach (var column in blocks)
             {
-                _spriteBatch.Draw(element.Item2, element.Item1, Color.White);
+                foreach (var queue in column)
+                {
+                    _spriteBatch.Draw(queue.Item2, queue.Item1, Color.White);
+                }
             }
             _spriteBatch.Draw(currentElementTexture, currentElement, Color.Orange);
 
