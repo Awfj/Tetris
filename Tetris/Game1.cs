@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Tetris
@@ -76,13 +75,18 @@ namespace Tetris
                 Exit();
 
             // TODO: Add your update logic here
-            if (currentElement.Y < background.Y + background.Height - currentElement.Height)
+            if (currentElement.Y < background.Y + background.Height - currentElement.Height - (blocks[currentColumn].Count * 50)) // TPDP: fix this
             {
-                currentElement.Y += 1;
+                currentElement.Y += 10;
             }
             else
             {
                 blocks[currentColumn].Enqueue(Tuple.Create(currentElement, currentElementTexture));
+
+                if (blocks[currentColumn].Count == rows)
+                {
+                    throw new NotImplementedException(); // TODO: fix this
+                }
 
                 currentColumn = GenerateColumnNumber();
                 Tuple<Rectangle, Texture2D> block = CreateBlock(currentColumn);
