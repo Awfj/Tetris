@@ -12,10 +12,7 @@ namespace Tetris
         private SpriteBatch _spriteBatch;
 
         Rectangle background;
-        Rectangle currentElement;
-
         Texture2D backgroundTexture;
-        Texture2D currentElementTexture;
         int columns;
         int rows;
         int currentColumn;
@@ -25,7 +22,7 @@ namespace Tetris
         const int BackgroundHeight = 400;
 
         Queue<Tuple<Rectangle, Texture2D>>[] blocks;
-        //List<Queue<Tuple<Rectangle, Texture2D>>> elements;
+        Tuple<Rectangle, Texture2D> currentEl;
 
         public Game1()
         {
@@ -56,7 +53,7 @@ namespace Tetris
                 blocks[i] = new();
             }
 
-            
+
             background = new(
                 GraphicsDevice.Viewport.Width / 2 - BackgroundWidth / 2,
                 GraphicsDevice.Viewport.Height / 2 - BackgroundHeight / 2,
@@ -68,10 +65,7 @@ namespace Tetris
             Tuple<Rectangle, Texture2D> block = CreateBlock(currentColumn);
             var (element, texture) = block;
 
-            currentElement = element;
-            currentElementTexture = texture;
-
-            
+            currentEl = Tuple.Create(element, texture);
         }
 
         protected override void Update(GameTime gameTime)
@@ -80,10 +74,12 @@ namespace Tetris
                 Exit();
 
             // TODO: Add your update logic here
+            var (currentElement, currentElementTexture) = currentEl;
 
             if (currentElement.Y < background.Y + background.Height - currentElement.Height - (blocks[currentColumn].Count * BlockDimension)) // TPDP: fix this
             {
                 currentElement.Y += 10;
+                currentEl = Tuple.Create(currentElement, currentElementTexture);
             }
             else
             {
@@ -147,6 +143,8 @@ namespace Tetris
 
                 currentElement = element;
                 currentElementTexture = texture;
+
+                currentEl = Tuple.Create(element, texture);
             }
 
             base.Update(gameTime);
@@ -168,7 +166,7 @@ namespace Tetris
                     _spriteBatch.Draw(queue.Item2, queue.Item1, Color.White);
                 }
             }
-            _spriteBatch.Draw(currentElementTexture, currentElement, Color.Orange);
+            _spriteBatch.Draw(currentEl.Item2, currentEl.Item1, Color.Orange);
 
             _spriteBatch.End();
 
