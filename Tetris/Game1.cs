@@ -20,6 +20,10 @@ namespace Tetris
         int rows;
         int currentColumn;
 
+        const int BlockDimension = 20;
+        const int BackgroundWidth = 300;
+        const int BackgroundHeight = 400;
+
         Queue<Tuple<Rectangle, Texture2D>>[] blocks;
         //List<Queue<Tuple<Rectangle, Texture2D>>> elements;
 
@@ -43,18 +47,20 @@ namespace Tetris
 
             // TODO: use this.Content to load your game content here
 
-            blocks = new Queue<Tuple<Rectangle, Texture2D>>[6]; // TODO: fix this
+            columns = BackgroundWidth / BlockDimension;
+            rows = BackgroundHeight / BlockDimension;
+
+            blocks = new Queue<Tuple<Rectangle, Texture2D>>[columns]; // TODO: fix this
             for (int i = 0; i < blocks.Length; i++)
             {
                 blocks[i] = new();
             }
 
-            int backgroundWidth = 300;
-            int backgroundHeight = 400;
+            
             background = new(
-                GraphicsDevice.Viewport.Width / 2 - backgroundWidth / 2,
-                GraphicsDevice.Viewport.Height / 2 - backgroundHeight / 2,
-                backgroundWidth, backgroundHeight);
+                GraphicsDevice.Viewport.Width / 2 - BackgroundWidth / 2,
+                GraphicsDevice.Viewport.Height / 2 - BackgroundHeight / 2,
+                BackgroundWidth, BackgroundHeight);
             backgroundTexture = new(GraphicsDevice, 1, 1);
             backgroundTexture.SetData(new Color[] { Color.White });
 
@@ -65,8 +71,7 @@ namespace Tetris
             currentElement = element;
             currentElementTexture = texture;
 
-            columns = background.Width / element.Width;
-            rows = background.Height / element.Height;
+            
         }
 
         protected override void Update(GameTime gameTime)
@@ -76,7 +81,7 @@ namespace Tetris
 
             // TODO: Add your update logic here
 
-            if (currentElement.Y < background.Y + background.Height - currentElement.Height - (blocks[currentColumn].Count * 50)) // TPDP: fix this
+            if (currentElement.Y < background.Y + background.Height - currentElement.Height - (blocks[currentColumn].Count * BlockDimension)) // TPDP: fix this
             {
                 currentElement.Y += 10;
             }
@@ -123,7 +128,7 @@ namespace Tetris
                                 // TPDP: fix this
                                 var g = blocks[j].Dequeue();
                                 var p = g.Item1;
-                                p.Y += 50;
+                                p.Y += BlockDimension;
                                 blocks[j].Enqueue(Tuple.Create(p, g.Item2));
                             }
                         }
@@ -170,15 +175,27 @@ namespace Tetris
             base.Draw(gameTime);
         }
 
+        private Tuple<Rectangle, Texture2D> CreateSquare(int column)
+        {
+            int squareDimension = BlockDimension * 2;
+            if (column == columns) column--;
+
+            Rectangle square = new(
+                background.X + BlockDimension * column,
+                background.Y,
+                squareDimension, squareDimension);
+            Texture2D squareTexture = new(GraphicsDevice, 1, 1); ;
+            squareTexture.SetData(new Color[] { Color.White });
+
+            return Tuple.Create(square, squareTexture);
+        }
+
         private Tuple<Rectangle, Texture2D> CreateBlock(int column)
         {
-            int blockWidth = 50;
-            int blockHeight = 50;
-
             Rectangle block = new(
-                background.X + blockWidth * column,
+                background.X + BlockDimension * column,
                 background.Y,
-                blockWidth, blockHeight);
+                BlockDimension, BlockDimension);
             Texture2D blockTexture = new(GraphicsDevice, 1, 1); ;
             blockTexture.SetData(new Color[] { Color.White });
 
