@@ -83,14 +83,10 @@ namespace Tetris
             int columnBlocks = currentElement.Width / BlockDimension;
             int rowBlocks = currentElement.Height / BlockDimension;
 
-            int maxColumnHeight = columns[currentColumn].Count * BlockDimension; // TODO: try to simplify
+            // find the maximum column height
+            int maxColumnHeight = FindMaxColumnHeight(columnBlocks);
 
-            for (int i = currentColumn + 1; i < currentColumn + columnBlocks; i++)
-            {
-                if (columns[i].Count * BlockDimension > maxColumnHeight)
-                    maxColumnHeight = columns[i].Count * BlockDimension;
-            }
-
+            // move the element down
             if (currentElement.Y < backgroundBottom - currentElement.Height - maxColumnHeight)
             {
                 currentElement.Y += 5;
@@ -128,6 +124,7 @@ namespace Tetris
                     }
                 }
 
+                // find full rows and remove them
                 int minColumnHeight = FindMinColumnHeight();
 
                 for (int i = 0; i < minColumnHeight; i++)
@@ -192,6 +189,38 @@ namespace Tetris
             }
 
             return min;
+        }
+
+        private int FindMaxColumnHeight(int columnBlocks)
+        {
+            int max = columns[currentColumn].Count * BlockDimension;
+
+            for (int i = currentColumn + 1; i < currentColumn + columnBlocks; i++)
+            {
+                int columnHeight = columns[i].Count * BlockDimension;
+
+                if (columnHeight > max)
+                {
+                    max = columnHeight;
+                }
+
+            }
+
+            return max;
+
+            /*int max = columns[0].Count;
+
+            for (int i = 1; i < columns.Length; i++)
+            {
+                int columnHeight = columns[i].Count;
+
+                if (columnHeight > max)
+                {
+                    max = columnHeight;
+                }
+            }
+
+            return max;*/
         }
 
         private bool CheckIfRowIsFull(int row)
