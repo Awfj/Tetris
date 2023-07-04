@@ -30,6 +30,16 @@ namespace Tetris
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+
+            totalColumns = BackgroundWidth / BlockDimension;
+            totalRows = BackgroundHeight / BlockDimension;
+
+            // initialize queues for columns
+            columns = new Queue<Tuple<Rectangle, Texture2D>>[totalColumns]; // TODO: fix this
+            for (int i = 0; i < columns.Length; i++)
+            {
+                columns[i] = new();
+            }
         }
 
         protected override void Initialize()
@@ -44,16 +54,6 @@ namespace Tetris
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-
-            totalColumns = BackgroundWidth / BlockDimension;
-            totalRows = BackgroundHeight / BlockDimension;
-
-            // initialize queues for columns
-            columns = new Queue<Tuple<Rectangle, Texture2D>>[totalColumns]; // TODO: fix this
-            for (int i = 0; i < columns.Length; i++)
-            {
-                columns[i] = new();
-            }
 
             // make the background
             background = new(
@@ -79,26 +79,28 @@ namespace Tetris
 
             // collision detection
             int backgroundBottom = background.Y + background.Height;
-            int columnHeight = columns[currentColumn].Count * BlockDimension;
-            int columnHeight2 = columns[currentColumn + 1 == totalColumns ? totalColumns - 1 : currentColumn + 1].Count * BlockDimension;
 
-            if (currentElement.Y < backgroundBottom - currentElement.Height - columnHeight &&
-                currentElement.Y < backgroundBottom - currentElement.Height - columnHeight2) // TPDP: fix this
+            int columnBlocks = currentElement.Width / BlockDimension;
+            int rowBlocks = currentElement.Height / BlockDimension;
+
+            int maxColumnHeight = columns[currentColumn].Count * BlockDimension; // TODO: try to simplify
+
+            for (int i = currentColumn + 1; i < currentColumn + columnBlocks; i++)
             {
-                // move the element down
+                if (columns[i].Count * BlockDimension > maxColumnHeight)
+                    maxColumnHeight = columns[i].Count * BlockDimension;
+            }
+
+            if (currentElement.Y < backgroundBottom - currentElement.Height - maxColumnHeight)
+            {
                 currentElement.Y += 5;
                 currentEl = Tuple.Create(currentElement, currentElementTexture);
             }
             else
             {
-                int columnBlocks = currentElement.Width / BlockDimension;
-                int rowBlocks = currentElement.Height / BlockDimension;
-
-
                 int nextRow = 0;
-                int f = currentColumn == totalColumns - 1 ? totalColumns - 2 : currentColumn;
 
-                for (int i = currentColumn; i < f + columnBlocks; i++)
+                for (int i = currentColumn; i < currentColumn + columnBlocks; i++)
                 {
                     // find the maximum row
                     if (columns[i].Count > nextRow)
@@ -107,7 +109,7 @@ namespace Tetris
                     }
                 }
 
-                for (int i = currentColumn; i < f + columnBlocks; i++) // TODO: fix this
+                for (int i = currentColumn; i < currentColumn + columnBlocks; i++) // TODO: fix this
                 {
                     // add null blocks to the queue to level the rows
                     for (int j = 0; j < rowBlocks; j++)
@@ -226,7 +228,6 @@ namespace Tetris
         private Tuple<Rectangle, Texture2D> CreateSquare(int column)
         {
             int squareDimension = BlockDimension * 2;
-            if (column == totalColumns - 1) column--;
 
             Rectangle square = new(
                 background.X + BlockDimension * column,
@@ -252,7 +253,7 @@ namespace Tetris
 
         private int GenerateColumnNumber()
         {
-            return new Random().Next(0, totalColumns);
+            return new Random().Next(0, totalColumns - 1); // if ele,emt is square, totalColumns - 1
         }
     }
 }
