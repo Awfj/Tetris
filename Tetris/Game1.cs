@@ -207,20 +207,6 @@ namespace Tetris
             }
 
             return max;
-
-            /*int max = columns[0].Count;
-
-            for (int i = 1; i < columns.Length; i++)
-            {
-                int columnHeight = columns[i].Count;
-
-                if (columnHeight > max)
-                {
-                    max = columnHeight;
-                }
-            }
-
-            return max;*/
         }
 
         private bool CheckIfRowIsFull(int row)
