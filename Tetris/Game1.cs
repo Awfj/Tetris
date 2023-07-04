@@ -14,15 +14,15 @@ namespace Tetris
 
         Rectangle background;
         Texture2D backgroundTexture;
-        int columns;
-        int rows;
+        int totalColumns;
+        int totalRows;
         int currentColumn;
 
         const int BlockDimension = 20;
         const int BackgroundWidth = 300;
         const int BackgroundHeight = 400;
 
-        Queue<Tuple<Rectangle, Texture2D>>[] blocks;
+        Queue<Tuple<Rectangle, Texture2D>>[] columns;
         Tuple<Rectangle, Texture2D> currentEl;
 
         public Game1()
@@ -45,16 +45,17 @@ namespace Tetris
 
             // TODO: use this.Content to load your game content here
 
-            columns = BackgroundWidth / BlockDimension;
-            rows = BackgroundHeight / BlockDimension;
+            totalColumns = BackgroundWidth / BlockDimension;
+            totalRows = BackgroundHeight / BlockDimension;
 
-            blocks = new Queue<Tuple<Rectangle, Texture2D>>[columns]; // TODO: fix this
-            for (int i = 0; i < blocks.Length; i++)
+            // initialize queues for columns
+            columns = new Queue<Tuple<Rectangle, Texture2D>>[totalColumns]; // TODO: fix this
+            for (int i = 0; i < columns.Length; i++)
             {
-                blocks[i] = new();
+                columns[i] = new();
             }
 
-
+            // make the background
             background = new(
                 GraphicsDevice.Viewport.Width / 2 - BackgroundWidth / 2,
                 GraphicsDevice.Viewport.Height / 2 - BackgroundHeight / 2,
@@ -75,22 +76,16 @@ namespace Tetris
 
             // TODO: Add your update logic here
             var (currentElement, currentElementTexture) = currentEl;
-            
+
             // collision detection
             int backgroundBottom = background.Y + background.Height;
-            int columnHeight = blocks[currentColumn].Count * BlockDimension;
-            int columnHeight2 = blocks[currentColumn + 1 == 15 ? 14 : currentColumn + 1].Count * BlockDimension;
+            int columnHeight = columns[currentColumn].Count * BlockDimension;
+            int columnHeight2 = columns[currentColumn + 1 == totalColumns ? totalColumns - 1 : currentColumn + 1].Count * BlockDimension;
 
             if (currentElement.Y < backgroundBottom - currentElement.Height - columnHeight &&
                 currentElement.Y < backgroundBottom - currentElement.Height - columnHeight2) // TPDP: fix this
             {
                 // move the element down
-                //int columnHeight2 = blocks[currentColumn + 1].Count * BlockDimension;
-                /*if (currentColumn <= 14 && currentElement.Y < backgroundBottom - currentElement.Height - columnHeight2)
-                {
-                    currentElement.Y += 5;
-                    currentEl = Tuple.Create(currentElement, currentElementTexture);
-                }*/
                 currentElement.Y += 5;
                 currentEl = Tuple.Create(currentElement, currentElementTexture);
             }
@@ -101,114 +96,46 @@ namespace Tetris
 
 
                 int nextRow = 0;
-                int f = currentColumn == 14 ? 13 : currentColumn;
+                int f = currentColumn == totalColumns - 1 ? totalColumns - 2 : currentColumn;
 
                 for (int i = currentColumn; i < f + columnBlocks; i++)
                 {
                     // find the maximum row
-                    if (blocks[i].Count > nextRow)
+                    if (columns[i].Count > nextRow)
                     {
-                        nextRow = blocks[i].Count;
+                        nextRow = columns[i].Count;
                     }
                 }
 
                 for (int i = currentColumn; i < f + columnBlocks; i++) // TODO: fix this
                 {
-
-
                     // add null blocks to the queue to level the rows
                     for (int j = 0; j < rowBlocks; j++)
                     {
-                        while (blocks[i].Count < nextRow)
+                        while (columns[i].Count < nextRow)
                         {
-                            blocks[i].Enqueue(null);
+                            columns[i].Enqueue(null);
                         }
                     }
-
-                    //nextRow++;
 
                     // add blocks to the queue
                     for (int j = nextRow; j < nextRow + rowBlocks; j++)
                     {
                         Tuple<Rectangle, Texture2D> block = CreateBlock(i, j + 1, currentElement.Height);
-                        blocks[i].Enqueue(block);
-                    }
-
-                    //nextRow = 0;
-                }
-
-
-
-                //blocks[currentColumn].Enqueue(Tuple.Create(currentElement, currentElementTexture));
-
-                // find the minimum row
-                int minRow = blocks[0].Count;
-                for (int i = 1; i < blocks.Length; i++)
-                {
-                    if (blocks[i].Count < minRow)
-                    {
-                        minRow = blocks[i].Count;
+                        columns[i].Enqueue(block);
                     }
                 }
 
-                for (int i = 0; i < minRow; i++)
+                int minColumnHeight = FindMinColumnHeight();
+
+                for (int i = 0; i < minColumnHeight; i++)
                 {
-                    // check if there is a full row
-                    bool isRowFull = false;
-
-                    for (int j = 0; j < blocks.Length; j++)
-                    {
-                        if (blocks[j].ElementAt(i) == null)
-                        {
-                            break;
-                        }
-
-                        if (j == blocks.Length - 1)
-                        {
-                            isRowFull = true;
-                        }
-                    }
-
-                    /*bool isRowFull = false;
-                    for (int j = 0; j < blocks.Length; j++)
-                    {
-                        if (j >= blocks.Length - 1)
-                        {
-                            isRowFull = true;
-                        }
-
-                        if (blocks[i] != null)
-                        {
-                            if (j >= blocks.Length - 1)
-                            {
-                                isRowFull = true;
-                            }
-                        }
-                        else break;
-                    }*/
-
-                    // remove the row
-                    if (isRowFull)
-                    {
-                        for (int j = 0; j < blocks.Length; j++)
-                        {
-                            blocks[j].Dequeue();
-
-                            // move the blocks down
-                            for (int k = 0; k < blocks[j].Count; k++)
-                            {
-                                // TPDP: fix this
-                                var g = blocks[j].Dequeue();
-                                var p = g.Item1;
-                                p.Y += BlockDimension;
-                                blocks[j].Enqueue(Tuple.Create(p, g.Item2));
-                            }
-                        }
-                    }
+                    bool isRowFull = CheckIfRowIsFull(i);
+                    if (isRowFull) RemoveRow();
                 }
 
                 // when reaches the top border, the game ends
-                if (blocks[currentColumn].Count == rows)
+                if (columns[currentColumn].Count == totalRows)
                 {
                     throw new NotImplementedException(); // TODO: fix this
                 }
@@ -231,7 +158,7 @@ namespace Tetris
 
             _spriteBatch.Draw(backgroundTexture, background, Color.Red);
 
-            foreach (var column in blocks)
+            foreach (var column in columns)
             {
                 foreach (var queue in column)
                 {
@@ -248,10 +175,58 @@ namespace Tetris
             base.Draw(gameTime);
         }
 
+        private int FindMinColumnHeight()
+        {
+            int min = columns[0].Count;
+
+            for (int i = 1; i < columns.Length; i++)
+            {
+                int columnHeight = columns[i].Count;
+
+                if (columnHeight < min)
+                {
+                    min = columnHeight;
+                }
+            }
+
+            return min;
+        }
+
+        private bool CheckIfRowIsFull(int row)
+        {
+            foreach (var column in columns)
+            {
+                if (column.ElementAt(row) == null)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void RemoveRow()
+        {
+            for (int j = 0; j < columns.Length; j++)
+            {
+                columns[j].Dequeue();
+
+                // move the blocks down
+                for (int k = 0; k < columns[j].Count; k++)
+                {
+                    // TPDP: fix this
+                    var g = columns[j].Dequeue();
+                    var p = g.Item1;
+                    p.Y += BlockDimension;
+                    columns[j].Enqueue(Tuple.Create(p, g.Item2));
+                }
+            }
+        }
+
         private Tuple<Rectangle, Texture2D> CreateSquare(int column)
         {
             int squareDimension = BlockDimension * 2;
-            if (column == columns - 1) column--;
+            if (column == totalColumns - 1) column--;
 
             Rectangle square = new(
                 background.X + BlockDimension * column,
@@ -277,7 +252,7 @@ namespace Tetris
 
         private int GenerateColumnNumber()
         {
-            return new Random().Next(0, columns);
+            return new Random().Next(0, totalColumns);
         }
     }
 }
