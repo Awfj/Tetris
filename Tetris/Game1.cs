@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Tetris.Constants;
 
 namespace Tetris
 {
@@ -14,13 +15,7 @@ namespace Tetris
 
         Rectangle background;
         Texture2D backgroundTexture;
-        int totalColumns;
-        int totalRows;
         int currentColumn;
-
-        const int BlockDimension = 20;
-        const int BackgroundWidth = 300;
-        const int BackgroundHeight = 400;
 
         Queue<Tuple<Rectangle, Texture2D>>[] columns;
         Tuple<Rectangle, Texture2D> currentEl;
@@ -31,11 +26,8 @@ namespace Tetris
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
 
-            totalColumns = BackgroundWidth / BlockDimension;
-            totalRows = BackgroundHeight / BlockDimension;
-
             // initialize queues for columns
-            columns = new Queue<Tuple<Rectangle, Texture2D>>[totalColumns]; // TODO: fix this
+            columns = new Queue<Tuple<Rectangle, Texture2D>>[TotalColumns]; // TODO: fix this
             for (int i = 0; i < columns.Length; i++)
             {
                 columns[i] = new();
@@ -64,7 +56,7 @@ namespace Tetris
             backgroundTexture.SetData(new Color[] { Color.White });
 
             currentColumn = GenerateColumnNumber();
-            Tuple<Rectangle, Texture2D> element = CreateSquare(currentColumn);
+            Tuple<Rectangle, Texture2D> element = CreateStraight(currentColumn);
 
             currentEl = element;
         }
@@ -119,7 +111,7 @@ namespace Tetris
                     // add blocks to the queue
                     for (int j = nextRow; j < nextRow + rowBlocks; j++)
                     {
-                        Tuple<Rectangle, Texture2D> block = CreateBlock(i, j + 1, currentElement.Height);
+                        Tuple<Rectangle, Texture2D> block = CreateBlock(i, j + 1);
                         columns[i].Enqueue(block);
                     }
                 }
@@ -134,13 +126,13 @@ namespace Tetris
                 }
 
                 // when reaches the top border, the game ends
-                if (columns[currentColumn].Count == totalRows)
+                if (columns[currentColumn].Count == TotalRows)
                 {
                     throw new NotImplementedException(); // TODO: fix this
                 }
 
                 currentColumn = GenerateColumnNumber();
-                Tuple<Rectangle, Texture2D> element = CreateSquare(currentColumn);
+                Tuple<Rectangle, Texture2D> element = CreateStraight(currentColumn);
 
                 currentEl = element;
             }
@@ -167,6 +159,7 @@ namespace Tetris
                     }
                 }
             }
+
             _spriteBatch.Draw(currentEl.Item2, currentEl.Item1, Color.Orange);
 
             _spriteBatch.End();
@@ -240,27 +233,43 @@ namespace Tetris
             }
         }
 
-        private Tuple<Rectangle, Texture2D> CreateSquare(int column)
+        private Tuple<Rectangle, Texture2D> CreateStraight(int column)
         {
-            int squareDimension = BlockDimension * 2;
+            int width = BlockDimension * 4;
+            int height = BlockDimension * 1;
 
             Rectangle square = new(
                 background.X + BlockDimension * column,
                 background.Y,
-                squareDimension, squareDimension);
-            Texture2D squareTexture = new(GraphicsDevice, 1, 1); ;
+                width, height);
+            Texture2D squareTexture = new(GraphicsDevice, 1, 1);
             squareTexture.SetData(new Color[] { Color.White });
 
             return Tuple.Create(square, squareTexture);
         }
 
-        private Tuple<Rectangle, Texture2D> CreateBlock(int column, int row, int elementHeight)
+        private Tuple<Rectangle, Texture2D> CreateSquare(int column)
+        {
+            int width = BlockDimension * 2;
+            int height = BlockDimension * 2;
+
+            Rectangle square = new(
+                background.X + BlockDimension * column,
+                background.Y,
+                width, height);
+            Texture2D squareTexture = new(GraphicsDevice, 1, 1);
+            squareTexture.SetData(new Color[] { Color.White });
+
+            return Tuple.Create(square, squareTexture);
+        }
+
+        private Tuple<Rectangle, Texture2D> CreateBlock(int column, int row)
         {
             Rectangle block = new(
                 background.X + BlockDimension * column,
                 background.Y + BackgroundHeight - BlockDimension * row,
                 BlockDimension, BlockDimension);
-            Texture2D blockTexture = new(GraphicsDevice, 1, 1); ;
+            Texture2D blockTexture = new(GraphicsDevice, 1, 1);
             blockTexture.SetData(new Color[] { Color.White });
 
             return Tuple.Create(block, blockTexture);
@@ -268,7 +277,14 @@ namespace Tetris
 
         private int GenerateColumnNumber()
         {
-            return new Random().Next(0, totalColumns - 1); // if ele,emt is square, totalColumns - 1
+            return new Random().Next(0, TotalColumns - 3); // if element is square, totalColumns - 1
         }
     }
+}
+
+enum TetraminoType
+{
+    Straight,
+    Square,
+    Block
 }
