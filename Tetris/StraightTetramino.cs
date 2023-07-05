@@ -9,14 +9,16 @@ namespace Tetris
         public StraightTetramino(GraphicsDevice graphicsDevice, Rectangle background)
         {
             RandomizeOrientation();
-
-            Shape = new Rectangle(
+            Test = 5;
+            Rectangle = new Rectangle(
                 background.X + Constants.BlockDimension * Column, 
                 background.Y, 
                 Width, Height);
             Texture = new(graphicsDevice, 1, 1);
             Texture.SetData(new Color[] { Color.White });
         }
+
+        public int Test { get; set; } // TODO: remove this
 
         private void RandomizeOrientation()
         {

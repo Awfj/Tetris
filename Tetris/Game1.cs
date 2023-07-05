@@ -18,7 +18,7 @@ namespace Tetris
         int currentColumn;
 
         Queue<Tuple<Rectangle, Texture2D>>[] columns;
-        Tuple<Rectangle, Texture2D> currentEl;
+        Tetramino currentEl;
 
         public Game1()
         {
@@ -55,10 +55,8 @@ namespace Tetris
             backgroundTexture = new(GraphicsDevice, 1, 1);
             backgroundTexture.SetData(new Color[] { Color.White });
 
-            currentColumn = GenerateColumnNumber();
-            Tuple<Rectangle, Texture2D> element = CreateStraight(currentColumn);
-
-            currentEl = element;
+            currentEl = RandomizeTetramino();
+            currentColumn = currentEl.Column;
         }
 
         protected override void Update(GameTime gameTime)
@@ -67,22 +65,22 @@ namespace Tetris
                 Exit();
 
             // TODO: Add your update logic here
-            var (currentElement, currentElementTexture) = currentEl;
 
             // collision detection
             int backgroundBottom = background.Y + background.Height;
 
-            int columnBlocks = currentElement.Width / BlockDimension;
-            int rowBlocks = currentElement.Height / BlockDimension;
+            int columnBlocks = currentEl.Width / BlockDimension;
+            int rowBlocks = currentEl.Height / BlockDimension;
 
             // find the maximum column height
             int maxColumnHeight = FindMaxColumnHeight(columnBlocks);
 
             // move the element down
-            if (currentElement.Y < backgroundBottom - currentElement.Height - maxColumnHeight)
+            if (currentEl.Rectangle.Y < backgroundBottom - currentEl.Height - maxColumnHeight)
             {
-                currentElement.Y += 5;
-                currentEl = Tuple.Create(currentElement, currentElementTexture);
+                Rectangle temp = currentEl.Rectangle;
+                temp.Y += 15;
+                currentEl.Rectangle = temp;
             }
             else
             {
@@ -128,13 +126,12 @@ namespace Tetris
                 // when reaches the top border, the game ends
                 if (columns[currentColumn].Count == TotalRows)
                 {
+                    // NOTE: The game didn't end once, when the element reached the top border
                     throw new NotImplementedException(); // TODO: fix this
                 }
 
-                currentColumn = GenerateColumnNumber();
-                Tuple<Rectangle, Texture2D> element = CreateStraight(currentColumn);
-
-                currentEl = element;
+                currentEl = RandomizeTetramino();
+                currentColumn = currentEl.Column;
             }
 
             base.Update(gameTime);
@@ -160,7 +157,7 @@ namespace Tetris
                 }
             }
 
-            _spriteBatch.Draw(currentEl.Item2, currentEl.Item1, Color.Orange);
+            _spriteBatch.Draw(currentEl.Texture, currentEl.Rectangle, Color.Orange);
 
             _spriteBatch.End();
 
@@ -233,36 +230,6 @@ namespace Tetris
             }
         }
 
-        private Tuple<Rectangle, Texture2D> CreateStraight(int column)
-        {
-            int width = BlockDimension * 4;
-            int height = BlockDimension * 1;
-
-            Rectangle square = new(
-                background.X + BlockDimension * column,
-                background.Y,
-                width, height);
-            Texture2D squareTexture = new(GraphicsDevice, 1, 1);
-            squareTexture.SetData(new Color[] { Color.White });
-
-            return Tuple.Create(square, squareTexture);
-        }
-
-        private Tuple<Rectangle, Texture2D> CreateSquare(int column)
-        {
-            int width = BlockDimension * 2;
-            int height = BlockDimension * 2;
-
-            Rectangle square = new(
-                background.X + BlockDimension * column,
-                background.Y,
-                width, height);
-            Texture2D squareTexture = new(GraphicsDevice, 1, 1);
-            squareTexture.SetData(new Color[] { Color.White });
-
-            return Tuple.Create(square, squareTexture);
-        }
-
         private Tuple<Rectangle, Texture2D> CreateBlock(int column, int row)
         {
             Rectangle block = new(
@@ -275,9 +242,22 @@ namespace Tetris
             return Tuple.Create(block, blockTexture);
         }
 
-        private int GenerateColumnNumber()
+        /*private int GenerateColumnNumber()
         {
             return new Random().Next(0, TotalColumns - 3); // if element is square, totalColumns - 1
+        }*/
+
+        private Tetramino RandomizeTetramino()
+        {
+            int n = new Random().Next(0, 2);
+
+            switch (n)
+            {
+                case 0:
+                    return new StraightTetramino(GraphicsDevice, background);
+                default:
+                    return new SquareTetramino(GraphicsDevice, background);
+            }
         }
     }
 }
