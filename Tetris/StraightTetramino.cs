@@ -18,7 +18,7 @@ namespace Tetris
             Texture.SetData(new Color[] { Color.White });
         }
 
-        public int Test { get; set; }
+        public int Test { get; set; } // TODO: remove this
 
         private void RandomizeOrientation()
         {
