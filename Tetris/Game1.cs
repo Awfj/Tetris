@@ -18,7 +18,7 @@ namespace Tetris
         int currentColumn;
 
         Queue<Tuple<Rectangle, Texture2D>>[] columns;
-        Tuple<Rectangle, Texture2D> currentEl;
+        Tetramino currentEl;
 
         public Game1()
         {
@@ -55,10 +55,8 @@ namespace Tetris
             backgroundTexture = new(GraphicsDevice, 1, 1);
             backgroundTexture.SetData(new Color[] { Color.White });
 
-            currentColumn = GenerateColumnNumber();
-            Tuple<Rectangle, Texture2D> element = CreateStraight(currentColumn);
-
-            currentEl = element;
+            currentEl = new StraightTetramino(GraphicsDevice, background);
+            currentColumn = currentEl.Column;
         }
 
         protected override void Update(GameTime gameTime)
@@ -67,22 +65,22 @@ namespace Tetris
                 Exit();
 
             // TODO: Add your update logic here
-            var (currentElement, currentElementTexture) = currentEl;
 
             // collision detection
             int backgroundBottom = background.Y + background.Height;
 
-            int columnBlocks = currentElement.Width / BlockDimension;
-            int rowBlocks = currentElement.Height / BlockDimension;
+            int columnBlocks = currentEl.Width / BlockDimension;
+            int rowBlocks = currentEl.Height / BlockDimension;
 
             // find the maximum column height
             int maxColumnHeight = FindMaxColumnHeight(columnBlocks);
 
             // move the element down
-            if (currentElement.Y < backgroundBottom - currentElement.Height - maxColumnHeight)
+            if (currentEl.Rectangle.Y < backgroundBottom - currentEl.Height - maxColumnHeight)
             {
-                currentElement.Y += 5;
-                currentEl = Tuple.Create(currentElement, currentElementTexture);
+                Rectangle temp = currentEl.Rectangle;
+                temp.Y += 5;
+                currentEl.Rectangle = temp;
             }
             else
             {
@@ -131,10 +129,8 @@ namespace Tetris
                     throw new NotImplementedException(); // TODO: fix this
                 }
 
-                currentColumn = GenerateColumnNumber();
-                Tuple<Rectangle, Texture2D> element = CreateStraight(currentColumn);
-
-                currentEl = element;
+                currentEl = new StraightTetramino(GraphicsDevice, background);
+                currentColumn = currentEl.Column;
             }
 
             base.Update(gameTime);
@@ -160,7 +156,7 @@ namespace Tetris
                 }
             }
 
-            _spriteBatch.Draw(currentEl.Item2, currentEl.Item1, Color.Orange);
+            _spriteBatch.Draw(currentEl.Texture, currentEl.Rectangle, Color.Orange);
 
             _spriteBatch.End();
 
