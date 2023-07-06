@@ -4,27 +4,25 @@ using System;
 
 namespace Tetris
 {
-    internal class StraightTetramino : Tetramino
+    internal class TetraminoT : Tetramino
     {
-        public StraightTetramino(GraphicsDevice graphicsDevice, Rectangle background)
+        public TetraminoT(GraphicsDevice graphicsDevice, Rectangle background)
         {
             RandomizeOrientation();
 
-            Column = 7;
-            Test = 5;
             Rectangle = new Rectangle(
-                background.X + Constants.BlockDimension * Column, 
-                background.Y, 
+                background.X + Constants.BlockDimension * Column,
+                background.Y,
                 Width, Height);
+
             Texture = new(graphicsDevice, 1, 1);
             Texture.SetData(new Color[] { Color.White });
         }
 
-        public int Test { get; set; } // TODO: remove this
-
         private void RandomizeOrientation()
         {
-            int n = new Random().Next(0, 2);
+            //int n = new Random().Next(0, 2);
+            int n = 0; // TODO: remove this
             switch (n)
             {
                 case 0:

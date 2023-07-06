@@ -10,6 +10,7 @@ namespace Tetris
         public SquareTetramino(GraphicsDevice graphicsDevice, Rectangle background)
         {
             RandomizeOrientation();
+            Column = 7;
 
             Rectangle = new Rectangle(
                 background.X + Constants.BlockDimension * Column,
