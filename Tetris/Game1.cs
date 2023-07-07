@@ -16,10 +16,10 @@ namespace Tetris
         Rectangle background;
         Texture2D backgroundTexture;
         int currentColumn;
+        int currentRow;
         int speed = 2;
 
-        const int delay = 15;
-        int keyDelay = delay;
+        int keyDelay = Delay;
         bool keyDelayActive = false;
 
         private KeyboardState keyboardState;
@@ -66,6 +66,7 @@ namespace Tetris
 
             currentEl = RandomizeTetramino();
             currentColumn = currentEl.Column;
+            currentRow = currentEl.Row;
         }
 
         protected override void Update(GameTime gameTime)
@@ -80,84 +81,16 @@ namespace Tetris
                 keyDelay--;
                 if (keyDelay <= 0)
                 {
-                    keyDelay = delay;
+                    keyDelay = Delay;
                     keyDelayActive = false;
                 }
             }
-
-
 
             // collision detection
             int columnBlocks = currentEl.Width / BlockDimension;
             int rowBlocks = currentEl.Height / BlockDimension;
 
-            // find the maximum column height
-            int backgroundBottom = background.Y + background.Height;
-            //int maxColumnHeight = FindMaxColumnHeight(columnBlocks);
-
-            // move the element down
-            /*if (currentEl.Rectangle.Y < backgroundBottom - currentEl.Height - maxColumnHeight)
-            {
-                Rectangle temp = currentEl.Rectangle;
-                temp.Y += 15;
-                currentEl.Rectangle = temp;
-            }*/
-
-            bool canMove = true;
-
-            /*if (canMove)
-            {
-                Rectangle temp = currentEl.Rectangle;
-                Rectangle temp2 = currentEl.Rectangle;
-
-                temp.X += 15;
-                temp2.X += 15;
-
-                for (int i = 0; i < columns.Length; i++)
-                {
-                    for (int j = 0; j < columns[i].Count; j++)
-                    {
-                        var s = columns[i].ElementAt(j).Item1;
-
-                        // movement left
-                        if (temp.X <= s.X + s.Width || temp2.X <= s.X + s.Width)
-                        {
-                            canMove = false;
-                            break;
-                        }
-
-                        // movement right
-                        if (temp.X + temp.Width >= s.X || temp2.X + temp2.Width >= s.X)
-                        {
-                            canMove = false;
-                            break;
-                        }
-                    }
-                }
-            }*/
-
-
-            int m = new Random().Next(0, 10);
-            string direction;
-            switch (m)
-            {
-                case 0:
-                    direction = "left";
-                    break;
-                /*case 1:
-                    direction = "right";
-                    break;*/
-                default:
-                    direction = "down";
-                    break;
-            }
-
-            //HandleInput();
-
-            //bool notNext = HandleCollision(direction, columnBlocks);
-
             bool generateNext = MoveDown(columnBlocks);
-
 
             if (generateNext == false)
             {
@@ -218,6 +151,7 @@ namespace Tetris
 
                 currentEl = RandomizeTetramino();
                 currentColumn = currentEl.Column;
+                currentRow = currentEl.Row;
             }
 
             base.Update(gameTime);
@@ -339,6 +273,7 @@ namespace Tetris
             }
 
             currentEl.Rectangle = temp;
+            currentRow = (currentEl.Rectangle.Y - background.Y) % speed;
             return false;
         }
 

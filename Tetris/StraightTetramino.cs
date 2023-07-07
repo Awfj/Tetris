@@ -10,7 +10,6 @@ namespace Tetris
         {
             RandomizeOrientation();
 
-            Column = 7;
             Test = 5;
             Rectangle = new Rectangle(
                 background.X + Constants.BlockDimension * Column, 
@@ -28,12 +27,12 @@ namespace Tetris
             switch (n)
             {
                 case 0:
-                    Column = new Random().Next(0, Constants.TotalColumns - 3);
+                    //Column = new Random().Next(0, Constants.TotalColumns - 3);
                     Width = Constants.BlockDimension * 4;
                     Height = Constants.BlockDimension;
                     break;
                 default:
-                    Column = new Random().Next(0, Constants.TotalColumns);
+                    //Column = new Random().Next(0, Constants.TotalColumns);
                     Width = Constants.BlockDimension;
                     Height = Constants.BlockDimension * 4;
                     break;
