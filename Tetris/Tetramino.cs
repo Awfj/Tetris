@@ -6,7 +6,7 @@ namespace Tetris
     internal abstract class Tetramino
     {
         public Tetramino() {
-            Column = 7;
+            Column = 6;
             Row = 20;
             //Row = Height / Constants.BlockDimension;
         }

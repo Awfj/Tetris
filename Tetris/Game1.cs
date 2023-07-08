@@ -249,7 +249,29 @@ namespace Tetris
             // check if the element is out of bounds
             if (temp.X < background.X) return;
 
-            for (int i = 0; i < columns.Length; i++)
+            int columnBlocks = currentEl.Width / BlockDimension;
+            int rowBlocks = currentEl.Height / BlockDimension;
+
+            int prevColumn = currentEl.Column - 1;
+
+            for (int j = currentEl.Row - 1; j > currentEl.Row - rowBlocks - 1; j--)
+            {
+                if (j >= columns[prevColumn].Count)
+                {
+                    continue;
+                }
+
+                if (columns[prevColumn].ElementAt(j) is null) continue;
+                var block = columns[prevColumn].ElementAt(j).Item1;
+
+                if (temp.X <= block.X + block.Width)
+                {
+                    return;
+                }
+            }
+
+
+            /*for (int i = 0; i < columns.Length; i++)
             {
                 for (int j = 0; j < columns[i].Count; j++)
                 {
@@ -263,7 +285,7 @@ namespace Tetris
                     }
 
                 }
-            }
+            }*/
 
             currentEl.Rectangle = temp;
             currentEl.Column--;
@@ -281,17 +303,24 @@ namespace Tetris
 
             if (temp.X + temp.Width > background.X + background.Width) return;
 
-            for (int i = 0; i < columns.Length; i++)
-            {
-                for (int j = 0; j < columns[i].Count; j++)
-                {
-                    if (columns[i].ElementAt(j) is null) continue;
-                    var s = columns[i].ElementAt(j).Item1;
+            int columnBlocks = currentEl.Width / BlockDimension;
+            int rowBlocks = currentEl.Height / BlockDimension;
 
-                    if (currentEl.Column + 1 == i && s.Y >= temp.Y && s.Y <= temp.Y + temp.Height)
-                    {
-                        return;
-                    }
+            int nextColumn = currentEl.Column + columnBlocks;
+
+            for (int j = currentEl.Row - 1; j > currentEl.Row - rowBlocks - 1; j--)
+            {
+                if (j >= columns[nextColumn].Count)
+                {
+                    continue;
+                }
+
+                if (columns[nextColumn].ElementAt(j) is null) continue;
+                var block = columns[nextColumn].ElementAt(j).Item1;
+
+                if (temp.X + temp.Width >= block.X)
+                {
+                    return;
                 }
             }
 
