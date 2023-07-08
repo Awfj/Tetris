@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 using static Tetris.Constants;
 
 namespace Tetris
@@ -273,7 +274,10 @@ namespace Tetris
             }
 
             currentEl.Rectangle = temp;
-            currentRow = (currentEl.Rectangle.Y - background.Y) % speed;
+            //currentRow = (currentEl.Rectangle.Y - background.Y) % speed;
+            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - currentEl.Rectangle.Y) / (double)20);
+            currentEl.Row = currentRow;
+
             return false;
         }
 
