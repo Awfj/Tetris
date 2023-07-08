@@ -7,7 +7,8 @@ namespace Tetris
     {
         public Tetramino() {
             Column = 7;
-            Row = 0;
+            Row = 20;
+            //Row = Height / Constants.BlockDimension;
         }
 
         public int Column { get; set; }

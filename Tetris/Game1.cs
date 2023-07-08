@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 using static Tetris.Constants;
 
 namespace Tetris
@@ -16,8 +15,11 @@ namespace Tetris
 
         Rectangle background;
         Texture2D backgroundTexture;
+
+        // starts from 0
         int currentColumn;
         int currentRow;
+
         int speed = 2;
 
         int keyDelay = Delay;
@@ -91,7 +93,7 @@ namespace Tetris
             int columnBlocks = currentEl.Width / BlockDimension;
             int rowBlocks = currentEl.Height / BlockDimension;
 
-            bool generateNext = MoveDown(columnBlocks);
+            bool generateNext = MoveDown(columnBlocks, rowBlocks);
 
             if (generateNext == false)
             {
@@ -99,34 +101,52 @@ namespace Tetris
             }
             else
             {
-                int nextRow = 0;
-
-                for (int i = currentColumn; i < currentColumn + columnBlocks; i++)
-                {
-                    // find the maximum row
-                    if (columns[i].Count > nextRow)
-                    {
-                        nextRow = columns[i].Count;
-                    }
-                }
-
                 for (int i = currentColumn; i < currentColumn + columnBlocks; i++) // TODO: fix this
                 {
-                    // add null blocks to the queue to level the rows
-                    for (int j = 0; j < rowBlocks; j++)
+                    if (currentEl.Row < columns[i].Count)
                     {
-                        while (columns[i].Count < nextRow)
+                        // add the current element to the queue
+
+                        var temp = new Queue<Tuple<Rectangle, Texture2D>>();
+
+                        int n = columns[i].Count; // TODO: fix this
+                        for (int j = 0; j < n; j++)
                         {
-                            columns[i].Enqueue(null);
+                            var block = columns[i].Dequeue();
+
+                            if (j >= currentEl.Row - rowBlocks && j < currentEl.Row)
+                            {
+                                temp.Enqueue(CreateBlock(i, j + 1));
+                            }
+                            else
+                            {
+                                temp.Enqueue(block);
+                            }
+                        }
+
+                        columns[i] = temp;
+                    }
+                    else
+                    {
+                        int nextRow = currentEl.Row - rowBlocks;
+
+                        // add null blocks to the queue to level the rows
+                        for (int j = 0; j < rowBlocks; j++)
+                        {
+                            while (columns[i].Count < nextRow)
+                            {
+                                columns[i].Enqueue(null);
+                            }
+                        }
+
+                        // add blocks to the queue
+                        for (int j = nextRow; j < nextRow + rowBlocks; j++)
+                        {
+                            Tuple<Rectangle, Texture2D> block = CreateBlock(i, j + 1);
+                            columns[i].Enqueue(block);
                         }
                     }
-
-                    // add blocks to the queue
-                    for (int j = nextRow; j < nextRow + rowBlocks; j++)
-                    {
-                        Tuple<Rectangle, Texture2D> block = CreateBlock(i, j + 1);
-                        columns[i].Enqueue(block);
-                    }
+                    
                 }
 
                 // find full rows and remove them
@@ -185,97 +205,35 @@ namespace Tetris
             base.Draw(gameTime);
         }
 
-        private bool HandleCollision(string direction, int columnBlocks)
-        {
-            Rectangle temp = currentEl.Rectangle;
-            //Rectangle temp2 = currentEl.Rectangle;
-
-
-
-            switch (direction)
-            {
-                case "left":
-                    temp.X -= speed;
-                    //temp2.X -= speed;
-                    break;
-                case "right":
-                    temp.X += speed;
-                    //temp2.X += speed;
-                    break;
-                case "down":
-                    temp.Y += speed;
-                    //temp2.Y += speed;
-                    break;
-            }
-
-            if (direction == "left")
-            {
-                if (temp.X < background.X) return true;
-            }
-
-            if (direction == "down")
-            {
-                //currentEl.Rectangle.Y < backgroundBottom - currentEl.Height - maxColumnHeight
-                int backgroundBottom = background.Y + background.Height;
-                int maxColumnHeight = FindMaxColumnHeight(columnBlocks);
-                if (currentEl.Rectangle.Y >= backgroundBottom - currentEl.Height - maxColumnHeight)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < columns.Length; i++)
-                {
-                    for (int j = 0; j < columns[i].Count; j++)
-                    {
-                        if (columns[i].ElementAt(j) is null) continue;
-                        var s = columns[i].ElementAt(j).Item1;
-
-
-                        switch (direction)
-                        {
-                            case "left":
-                                //  || temp2.X <= s.X + s.Width
-                                //if (temp.X < s.X + s.Width)
-                                if (currentEl.Column - 1 == i && s.Y >= temp.Y && s.Y <= temp.Y + temp.Height)
-                                {
-                                    return false;
-                                }
-                                break;
-                            case "right":
-                                //  || temp2.X + temp2.Width >= s.X
-                                if (temp.X + temp.Width > s.X)
-                                {
-                                    //return false;
-                                }
-                                break;
-                        }
-
-                    }
-                }
-
-
-            }
-            currentEl.Rectangle = temp;
-            return true;
-        }
-
-        private bool MoveDown(int columnBlocks)
+        private bool MoveDown(int columnBlocks, int rowBlocks)
         {
             Rectangle temp = currentEl.Rectangle;
             temp.Y += speed;
 
-            int backgroundBottom = background.Y + background.Height;
-            int maxColumnHeight = FindMaxColumnHeight(columnBlocks);
-            if (currentEl.Rectangle.Y >= backgroundBottom - currentEl.Height - maxColumnHeight || currentEl.Rectangle.Y < background.Y)
+            if (temp.Y + temp.Height > background.Y + background.Height) return true;
+
+            for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
             {
-                return true;
+                if (currentEl.Row - rowBlocks > columns[i].Count)
+                {
+                    continue;
+                }
+
+                for (int j = currentEl.Row - rowBlocks - 1; j >= 0; j--)
+                {
+                    if (columns[i].ElementAt(j) is null) continue;
+                    var block = columns[i].ElementAt(j).Item1;
+
+                    if (temp.Y + temp.Height > block.Y)
+                    {
+                        return true;
+                    }
+
+                }
             }
 
             currentEl.Rectangle = temp;
-            //currentRow = (currentEl.Rectangle.Y - background.Y) % speed;
-            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - currentEl.Rectangle.Y) / (double)20);
+            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - (currentEl.Rectangle.Y)) / (double)20);
             currentEl.Row = currentRow;
 
             return false;
@@ -288,6 +246,7 @@ namespace Tetris
             Rectangle temp = currentEl.Rectangle;
             temp.X -= 20;
 
+            // check if the element is out of bounds
             if (temp.X < background.X) return;
 
             for (int i = 0; i < columns.Length; i++)
@@ -295,10 +254,10 @@ namespace Tetris
                 for (int j = 0; j < columns[i].Count; j++)
                 {
                     if (columns[i].ElementAt(j) is null) continue;
-                    var s = columns[i].ElementAt(j).Item1;
+                    var block = columns[i].ElementAt(j).Item1;
 
 
-                    if (currentEl.Column - 1 == i && s.Y >= temp.Y && s.Y <= temp.Y + temp.Height)
+                    if (currentEl.Column - 1 == i && block.Y >= temp.Y && block.Y <= temp.Y + temp.Height)
                     {
                         return;
                     }
@@ -361,11 +320,6 @@ namespace Tetris
                         break;
                 }
             }
-
-            /*if ()
-            {
-                MoveLeft(); // TODO: fix this
-            }*/
         }
 
         private int FindMinColumnHeight()
@@ -385,7 +339,7 @@ namespace Tetris
             return min;
         }
 
-        private int FindMaxColumnHeight(int columnBlocks)
+        /*private int FindMaxColumnHeight(int columnBlocks)
         {
             int max = columns[currentColumn].Count * BlockDimension;
 
@@ -401,7 +355,7 @@ namespace Tetris
             }
 
             return max;
-        }
+        }*/
 
         private bool CheckIfRowIsFull(int row)
         {
