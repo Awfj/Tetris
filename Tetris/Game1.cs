@@ -146,7 +146,7 @@ namespace Tetris
                             columns[i].Enqueue(block);
                         }
                     }
-                    
+
                 }
 
                 // find full rows and remove them
@@ -210,6 +210,7 @@ namespace Tetris
             Rectangle temp = currentEl.Rectangle;
             temp.Y += speed;
 
+            // check if the element is out of bounds
             if (temp.Y + temp.Height > background.Y + background.Height) return true;
 
             for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
@@ -228,7 +229,6 @@ namespace Tetris
                     {
                         return true;
                     }
-
                 }
             }
 
@@ -239,96 +239,137 @@ namespace Tetris
             return false;
         }
 
-        private void MoveLeft()
+        private void Move(Direction direction)
         {
             if (keyDelayActive) return;
 
             Rectangle temp = currentEl.Rectangle;
-            temp.X -= 20;
 
-            // check if the element is out of bounds
-            if (temp.X < background.X) return;
+            temp.X = GetUpdatedX(direction, temp);
 
-            int columnBlocks = currentEl.Width / BlockDimension;
+            if (IsSideCollisionWithBorder(direction, temp, background)) return;
+
             int rowBlocks = currentEl.Height / BlockDimension;
+            int adjacentColumnIndex = GetAdjacentColumnIndexToElement(direction, currentEl);
 
-            int prevColumn = currentEl.Column - 1;
-
-            for (int j = currentEl.Row - 1; j > currentEl.Row - rowBlocks - 1; j--)
+            for (int i = currentEl.Row - 1; i > currentEl.Row - rowBlocks - 1; i--)
             {
-                if (j >= columns[prevColumn].Count)
-                {
-                    continue;
-                }
+                if (i >= columns[adjacentColumnIndex].Count) continue;
+                if (columns[adjacentColumnIndex].ElementAt(i) is null) continue;
 
-                if (columns[prevColumn].ElementAt(j) is null) continue;
-                var block = columns[prevColumn].ElementAt(j).Item1;
+                Rectangle block = columns[adjacentColumnIndex].ElementAt(i).Item1;
 
-                if (temp.X <= block.X + block.Width)
-                {
-                    return;
-                }
+                if (IsSideCollisionWithBlock(direction, temp, block)) return;
             }
 
-
-            /*for (int i = 0; i < columns.Length; i++)
-            {
-                for (int j = 0; j < columns[i].Count; j++)
-                {
-                    if (columns[i].ElementAt(j) is null) continue;
-                    var block = columns[i].ElementAt(j).Item1;
-
-
-                    if (currentEl.Column - 1 == i && block.Y >= temp.Y && block.Y <= temp.Y + temp.Height)
-                    {
-                        return;
-                    }
-
-                }
-            }*/
-
             currentEl.Rectangle = temp;
-            currentEl.Column--;
+            currentEl.Column = GetAdjacentColumn(direction, currentEl);
             currentColumn = currentEl.Column;
 
             keyDelayActive = true;
         }
 
-        private void MoveRight()
+        private static int GetUpdatedToLeftX(Rectangle element)
         {
-            if (keyDelayActive) return;
+            return element.X - 20;
+        }
 
-            Rectangle temp = currentEl.Rectangle;
-            temp.X += 20;
+        private static int GetUpdatedToRightX(Rectangle element)
+        {
+            return element.X + 20;
+        }
 
-            if (temp.X + temp.Width > background.X + background.Width) return;
+        private static bool IsLeftCollisionWithBorder(Rectangle element, Rectangle background)
+        {
+            return element.X < background.X;
+        }
 
-            int columnBlocks = currentEl.Width / BlockDimension;
-            int rowBlocks = currentEl.Height / BlockDimension;
+        private static bool IsRightCollisionWithBorder(Rectangle element, Rectangle background)
+        {
+            return element.X + element.Width > background.X + background.Width;
+        }
 
-            int nextColumn = currentEl.Column + columnBlocks;
+        private static int GetPrevColumn(Tetramino element)
+        {
+            return element.Column - 1;
+        }
 
-            for (int j = currentEl.Row - 1; j > currentEl.Row - rowBlocks - 1; j--)
-            {
-                if (j >= columns[nextColumn].Count)
-                {
-                    continue;
-                }
+        private static int GetNextColumn(Tetramino element)
+        {
+            return element.Column + 1;
+        }
 
-                if (columns[nextColumn].ElementAt(j) is null) continue;
-                var block = columns[nextColumn].ElementAt(j).Item1;
+        private static int GetColumnAfterElement(Tetramino element)
+        {
+            int elementHWidthInBlocks = element.Width / BlockDimension;
+            return element.Column + elementHWidthInBlocks;
+        }
 
-                if (temp.X + temp.Width >= block.X)
-                {
-                    return;
-                }
-            }
+        private static bool IsLeftCollisionWithBLock(Rectangle element, Rectangle block)
+        {
+            return element.X <= block.X + block.Width;
+        }
 
-            currentEl.Rectangle = temp;
-            currentEl.Column++;
-            currentColumn = currentEl.Column;
+        private static bool IsRightCollisionWithBlock(Rectangle element, Rectangle block)
+        {
+            return element.X + element.Width >= block.X;
+        }
 
-            keyDelayActive = true;
+        private Dictionary<Direction, Tuple<
+            Func<Rectangle, int>,
+            Func<Rectangle, Rectangle, bool>, 
+            Func<Tetramino, int>,
+            Func<Rectangle, Rectangle, bool>,
+            Func<Tetramino, int>
+            >> _directionMap = new()
+        {
+            { Direction.Left, new Tuple<
+                Func<Rectangle, int>,
+                Func<Rectangle, Rectangle, bool>,
+                Func<Tetramino, int>,
+                Func<Rectangle, Rectangle, bool>,
+                Func<Tetramino, int>
+                >(GetUpdatedToLeftX, IsLeftCollisionWithBorder, GetPrevColumn, 
+                IsLeftCollisionWithBLock, GetPrevColumn) },
+            { Direction.Right, new Tuple<
+                Func<Rectangle, int>,
+                Func<Rectangle, Rectangle, bool>,
+                Func<Tetramino, int>,
+                Func<Rectangle, Rectangle, bool>,
+                Func<Tetramino, int>
+                >(GetUpdatedToRightX, IsRightCollisionWithBorder, GetColumnAfterElement, 
+                IsRightCollisionWithBlock, GetNextColumn) }
+        };
+
+        private int GetUpdatedX(Direction direction, Rectangle element)
+        {
+            return _directionMap[direction].Item1.Invoke(element);
+        }
+
+        private bool IsSideCollisionWithBorder(Direction direction, Rectangle element, Rectangle background)
+        {
+            return _directionMap[direction].Item2.Invoke(element, background);
+        }
+
+        private int GetAdjacentColumnIndexToElement(Direction direction, Tetramino element)
+        {
+            return _directionMap[direction].Item3.Invoke(element);
+        }
+
+        private bool IsSideCollisionWithBlock(Direction direction, Rectangle element, Rectangle block)
+        {
+            return _directionMap[direction].Item4.Invoke(element, block);
+        }
+
+        private int GetAdjacentColumn(Direction direction, Tetramino element)
+        {
+            return _directionMap[direction].Item5.Invoke(element);
+        }
+
+        private enum Direction
+        {
+            Left,
+            Right
         }
 
         private void HandleInput()
@@ -342,10 +383,10 @@ namespace Tetris
                 switch (key)
                 {
                     case Keys.Left:
-                        MoveLeft();
+                        Move(Direction.Left);
                         break;
                     case Keys.Right:
-                        MoveRight();
+                        Move(Direction.Right);
                         break;
                 }
             }
@@ -368,24 +409,6 @@ namespace Tetris
             return min;
         }
 
-        /*private int FindMaxColumnHeight(int columnBlocks)
-        {
-            int max = columns[currentColumn].Count * BlockDimension;
-
-            for (int i = currentColumn + 1; i < currentColumn + columnBlocks; i++)
-            {
-                int columnHeight = columns[i].Count * BlockDimension;
-
-                if (columnHeight > max)
-                {
-                    max = columnHeight;
-                }
-
-            }
-
-            return max;
-        }*/
-
         private bool CheckIfRowIsFull(int row)
         {
             foreach (var column in columns)
@@ -403,7 +426,7 @@ namespace Tetris
         {
             for (int j = 0; j < columns.Length; j++)
             {
-                // remove filled row from every column
+                // remove filled row from every adjacentColumnIndex
                 columns[j].Dequeue();
 
                 // move the blocks down
@@ -417,7 +440,7 @@ namespace Tetris
                         var p = g.Item1;
                         p.Y += BlockDimension;
                         columns[j].Enqueue(Tuple.Create(p, g.Item2));
-                    }                    
+                    }
                 }
             }
         }
