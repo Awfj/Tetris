@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 
 namespace Tetris
 {
@@ -8,20 +9,14 @@ namespace Tetris
     {
         public StraightTetramino(GraphicsDevice graphicsDevice, Rectangle background)
         {
-            RandomizeOrientation();
+            RandomizeOrientation(graphicsDevice, background);
 
             Test = 5;
-            Rectangle = new Rectangle(
-                background.X + Constants.BlockDimension * Column, 
-                background.Y, 
-                Width, Height);
-            Texture = new(graphicsDevice, 1, 1);
-            Texture.SetData(new Color[] { Color.White });
         }
 
         public int Test { get; set; } // TODO: remove this
 
-        private void RandomizeOrientation()
+        private void RandomizeOrientation(GraphicsDevice graphicsDevice, Rectangle background)
         {
             int n = new Random().Next(0, 2);
             switch (n)
@@ -30,11 +25,38 @@ namespace Tetris
                     //Column = new Random().Next(0, Constants.TotalColumns - 3);
                     Width = Constants.BlockDimension * 4;
                     Height = Constants.BlockDimension;
+
+                    // horizontal
+                    for (int i = 0, x = background.X + Constants.BlockDimension * Column; i < 4; i++, x += 20)
+                    {
+                        Block block = new(
+                            x,
+                            background.Y,
+                            Column + i,
+                            Row,
+                            graphicsDevice);
+
+                        Blocks.Add(new List<Block>());
+                        Blocks[i].Add(block);
+                    }
                     break;
                 default:
                     //Column = new Random().Next(0, Constants.TotalColumns);
                     Width = Constants.BlockDimension;
                     Height = Constants.BlockDimension * 4;
+
+                    // vertial
+                    Blocks.Add(new List<Block>());
+                    for (int j = 0, y = background.Y; j < 4; j++, y += 20)
+                    {
+                        Block block = new(
+                            background.X + Constants.BlockDimension * Column,
+                            y,
+                            Column,
+                            Row - j,
+                            graphicsDevice);
+                        Blocks[0].Add(block);
+                    }
                     break;
             }
         }

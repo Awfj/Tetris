@@ -1,13 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 
 namespace Tetris
 {
-    internal class TetraminoT : Tetramino
+    internal class SkewTetramino : Tetramino
     {
-        public TetraminoT(GraphicsDevice graphicsDevice, Rectangle background)
+        public SkewTetramino(GraphicsDevice graphicsDevice, Rectangle background)
         {
             RandomizeOrientation(graphicsDevice, background);
         }
@@ -33,7 +32,7 @@ namespace Tetris
             Width = Constants.BlockDimension * 2;
             Height = Constants.BlockDimension * 3;
 
-            for (int i = 0, x = background.X + Constants.BlockDimension * Column; i < 2; i++, x += 20)
+            for (int i = 0, x = background.X + Constants.BlockDimension * Column; i < 1; i++, x += 20)
             {
                 Block block = new(
                     x,
@@ -46,7 +45,33 @@ namespace Tetris
                 Blocks[i].Add(block);
             }
 
-            for (int j = 0, y = background.Y + 20; j < 2; j++, y += 20)
+            for (int i = 0, x = background.X + Constants.BlockDimension * Column; i < 2; i++, x += 20)
+            {
+                Block block = new(
+                    x,
+                    background.Y + Constants.BlockDimension,
+                    Column + i,
+                    Row,
+                    graphicsDevice);
+
+                if (i == 1) Blocks.Add(new List<Block>());
+
+                Blocks[i].Add(block);
+            }
+
+            for (int i = 1, x = background.X + Constants.BlockDimension * Column; i < 2; i++, x += 20)
+            {
+                Block block = new(
+                    x + Constants.BlockDimension,
+                    background.Y + Constants.BlockDimension * 2,
+                    Column + i,
+                    Row,
+                    graphicsDevice);
+
+                Blocks[i].Add(block);
+            }
+
+            /*for (int j = 0, y = background.Y + 20; j < 2; j++, y += 20)
             {
                 Block block = new(
                     background.X + Constants.BlockDimension * Column,
@@ -55,7 +80,7 @@ namespace Tetris
                     Row - j,
                     graphicsDevice);
                 Blocks[0].Add(block);
-            }
+            }*/
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace Tetris
 {
@@ -11,6 +12,7 @@ namespace Tetris
             //Row = Height / Constants.BlockDimension;
         }
 
+        public List<List<Block>> Blocks { get; set; } = new();
         public int Column { get; set; }
         public int Row { get; set; }
         public int Width { get; set; }

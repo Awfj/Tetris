@@ -74,7 +74,8 @@ namespace Tetris
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
+                Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             // TODO: Add your update logic here
@@ -101,9 +102,12 @@ namespace Tetris
             }
             else
             {
+                // fill the queue with blocks and generate a new element
                 for (int i = currentColumn; i < currentColumn + columnBlocks; i++) // TODO: fix this
                 {
-                    if (currentEl.Row < columns[i].Count)
+                    // if the current row already exists
+                    // for nesting
+                    if (currentEl.Blocks[i - currentColumn][0].Row < columns[i].Count)
                     {
                         // add the current element to the queue
 
@@ -114,7 +118,7 @@ namespace Tetris
                         {
                             var block = columns[i].Dequeue();
 
-                            if (j >= currentEl.Row - rowBlocks && j < currentEl.Row)
+                            if (j >= currentEl.Row - currentEl.Blocks[i].Count && j < currentEl.Row)
                             {
                                 temp.Enqueue(CreateBlock(i, j + 1));
                             }
@@ -128,10 +132,11 @@ namespace Tetris
                     }
                     else
                     {
-                        int nextRow = currentEl.Row - rowBlocks;
+                        int rowCount = currentEl.Blocks[i - currentColumn].Count;
+                        int nextRow = currentEl.Blocks[i - currentColumn][^1].Row - 1;
 
-                        // add null blocks to the queue to level the rows
-                        for (int j = 0; j < rowBlocks; j++)
+                        // add null to the queue to level the rows
+                        for (int j = 0; j < rowCount; j++)
                         {
                             while (columns[i].Count < nextRow)
                             {
@@ -140,7 +145,7 @@ namespace Tetris
                         }
 
                         // add blocks to the queue
-                        for (int j = nextRow; j < nextRow + rowBlocks; j++)
+                        for (int j = nextRow; j < nextRow + rowCount; j++)
                         {
                             Tuple<Rectangle, Texture2D> block = CreateBlock(i, j + 1);
                             columns[i].Enqueue(block);
@@ -198,7 +203,13 @@ namespace Tetris
                 }
             }
 
-            _spriteBatch.Draw(currentEl.Texture, currentEl.Rectangle, Color.Orange);
+            foreach (var column in currentEl.Blocks)
+            {
+                foreach (var block in column)
+                {
+                    _spriteBatch.Draw(block.Texture, block.Rectangle, Color.Orange);
+                }
+            }
 
             _spriteBatch.End();
 
@@ -207,13 +218,56 @@ namespace Tetris
 
         private bool MoveDown(int columnBlocks, int rowBlocks)
         {
-            Rectangle temp = currentEl.Rectangle;
-            temp.Y += speed;
+            Tetramino temp = currentEl;
+
+            foreach (var column in temp.Blocks)
+            {
+                foreach (var block in column)
+                {
+                    //if (block == null) continue;
+
+                    var s = block.Rectangle;
+                    s.Y += speed;
+                    block.Rectangle = s;
+                }
+            }
 
             // check if the element is out of bounds
-            if (temp.Y + temp.Height > background.Y + background.Height) return true;
+            foreach (var column in temp.Blocks)
+            {
+                Block lastBlock = column[^1]; // check if the last block is not null
+                if (lastBlock.Rectangle.Y + lastBlock.Rectangle.Height > background.Y + background.Height)
+                {
+                    return true;
+                }
+            }
 
-            for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
+            for (int i = 0, currentColumn = temp.Column; i < temp.Blocks.Count; i++, currentColumn++)
+            {
+                if (currentEl.Blocks[i][^1].Row - 1 > columns[currentColumn].Count)
+                {
+                    continue;
+                }
+
+                for (int j = currentEl.Blocks[i][^1].Row - 2; j >= 0; j--)
+                {
+                    if (columns[currentColumn].ElementAt(j) is null) continue;
+                    var block = columns[currentColumn].ElementAt(j).Item1;
+
+                    if (temp.Blocks[i][^1].Rectangle.Y + temp.Blocks[i][^1].Height > block.Y)
+                    {
+                        return true;
+                    }
+                }
+            } 
+
+
+            /*for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
+            {
+
+            }*/
+
+            /*for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
             {
                 if (currentEl.Row - rowBlocks > columns[i].Count)
                 {
@@ -230,11 +284,34 @@ namespace Tetris
                         return true;
                     }
                 }
+            }*/
+
+
+
+            currentEl = temp;
+            int y = 0;
+
+            for (int i = 0; i < currentEl.Blocks.Count; i++)
+            {
+                //if (currentEl.Blocks[i][0] == null) continue;
+
+                y = currentEl.Blocks[i][0].Rectangle.Y;
             }
 
-            currentEl.Rectangle = temp;
-            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - (currentEl.Rectangle.Y)) / (double)20);
+            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - y) / (double)20);
             currentEl.Row = currentRow;
+
+            foreach (var column in temp.Blocks)
+            {
+                foreach (var block in column)
+                {
+                    block.Row = (int)Math.Ceiling(((background.Y + background.Height) - block.Rectangle.Y) / (double)20);
+                }
+            }
+
+            /*currentEl.Rectangle = temp;
+            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - (currentEl.Rectangle.Y)) / (double)20);
+            currentEl.Row = currentRow;*/
 
             return false;
         }
@@ -466,13 +543,16 @@ namespace Tetris
         {
             int n = new Random().Next(0, 2);
 
-            switch (n)
+            /*switch (n)
             {
                 case 0:
                     return new StraightTetramino(GraphicsDevice, background);
                 default:
                     return new SquareTetramino(GraphicsDevice, background);
-            }
+            }*/
+
+            //return new StraightTetramino(GraphicsDevice, background);
+            return new SkewTetramino(GraphicsDevice, background);
         }
     }
 }
