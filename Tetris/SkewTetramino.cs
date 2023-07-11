@@ -29,58 +29,59 @@ namespace Tetris
                     break;
             }*/
 
-            Width = Constants.BlockDimension * 2;
-            Height = Constants.BlockDimension * 3;
+            /*Columns = 2;
+            Rows = 3;
 
-            for (int i = 0, x = background.X + Constants.BlockDimension * Column; i < 1; i++, x += 20)
+            Width = Constants.BlockDimension * Columns;
+            Height = Constants.BlockDimension * Rows;
+
+            for (int i = 0; i < Columns; i++)
             {
-                Block block = new(
-                    x,
-                    background.Y,
-                    Column + i,
-                    Row,
-                    graphicsDevice);
-
                 Blocks.Add(new List<Block>());
-                Blocks[i].Add(block);
-            }
 
-            for (int i = 0, x = background.X + Constants.BlockDimension * Column; i < 2; i++, x += 20)
-            {
-                Block block = new(
-                    x,
-                    background.Y + Constants.BlockDimension,
+                for (int j = 0; j < Rows; j++)
+                {
+                    if (i == 0 && j == 0 || 
+                        i == 1 && j == 2) 
+                        continue;
+
+                    Block block = new(
+                    background.X + Constants.BlockDimension * (Column + i),
+                    background.Y + Constants.BlockDimension * (Row + j),
                     Column + i,
-                    Row,
+                    Row + j,
                     graphicsDevice);
 
-                if (i == 1) Blocks.Add(new List<Block>());
-
-                Blocks[i].Add(block);
-            }
-
-            for (int i = 1, x = background.X + Constants.BlockDimension * Column; i < 2; i++, x += 20)
-            {
-                Block block = new(
-                    x + Constants.BlockDimension,
-                    background.Y + Constants.BlockDimension * 2,
-                    Column + i,
-                    Row,
-                    graphicsDevice);
-
-                Blocks[i].Add(block);
-            }
-
-            /*for (int j = 0, y = background.Y + 20; j < 2; j++, y += 20)
-            {
-                Block block = new(
-                    background.X + Constants.BlockDimension * Column,
-                    y,
-                    Column,
-                    Row - j,
-                    graphicsDevice);
-                Blocks[0].Add(block);
+                    Blocks[i].Add(block);
+                }
             }*/
+
+            Columns = 3;
+            Rows = 2;
+
+            Width = Constants.BlockDimension * Columns;
+            Height = Constants.BlockDimension * Rows;
+
+            for (int i = 0; i < Columns; i++)
+            {
+                Blocks.Add(new List<Block>());
+
+                for (int j = 0; j < Rows; j++)
+                {
+                    if (i == 0 && j == 1 ||
+                        i == 2 && j == 0)
+                        continue;
+
+                    Block block = new(
+                    background.X + Constants.BlockDimension * (Column + i),
+                    background.Y + Constants.BlockDimension * (Row + j),
+                    Column + i,
+                    Row + j,
+                    graphicsDevice);
+
+                    Blocks[i].Add(block);
+                }
+            }
         }
     }
 }

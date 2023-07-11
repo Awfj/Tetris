@@ -8,13 +8,15 @@ namespace Tetris
     {
         public Tetramino() {
             Column = 6;
-            Row = 20;
+            Row = 0;
             //Row = Height / Constants.BlockDimension;
         }
 
         public List<List<Block>> Blocks { get; set; } = new();
         public int Column { get; set; }
         public int Row { get; set; }
+        public int Columns { get; set; }
+        public int Rows { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
         public Rectangle Rectangle { get; set; }
