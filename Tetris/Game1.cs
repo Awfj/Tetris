@@ -113,14 +113,17 @@ namespace Tetris
 
                         var temp = new Queue<Tuple<Rectangle, Texture2D>>();
 
-                        int n = columns[i].Count; // TODO: fix this
-                        for (int j = 0; j < n; j++)
+                        int n = columns[i].Count;
+                        for (int j = 0, b = currentEl.Blocks[i - currentColumn].Count - 1; j < n; j++)
                         {
                             var block = columns[i].Dequeue();
 
-                            if (j >= currentEl.Row - currentEl.Blocks[i].Count && j < currentEl.Row)
+                            if (b >= 0 && temp.Count == currentEl.Blocks[i - currentColumn][b].Row - 1)
                             {
-                                temp.Enqueue(CreateBlock(i, j + 1));
+                                var bl = currentEl.Blocks[i - currentColumn][b];
+
+                                temp.Enqueue(new Tuple<Rectangle, Texture2D>(bl.Rectangle, bl.Texture));
+                                b--;
                             }
                             else
                             {
@@ -218,32 +221,39 @@ namespace Tetris
 
         private bool MoveDown(int columnBlocks, int rowBlocks)
         {
-            Tetramino temp = currentEl;
-
-            foreach (var column in temp.Blocks)
+            foreach (var column in currentEl.Blocks)
             {
                 foreach (var block in column)
                 {
-                    //if (block == null) continue;
-
                     var s = block.Rectangle;
                     s.Y += speed;
-                    block.Rectangle = s;
+                    block.Rectangle = s; // check if needs to move back to the previous position
                 }
             }
 
             // check if the element is out of bounds
-            foreach (var column in temp.Blocks)
+            foreach (var column in currentEl.Blocks)
             {
-                Block lastBlock = column[^1]; // check if the last block is not null
+                Block lastBlock = column[^1]; // check if the last ablock is not null
                 if (lastBlock.Rectangle.Y + lastBlock.Rectangle.Height > background.Y + background.Height)
                 {
+                    foreach (var columnv in currentEl.Blocks)
+                    {
+                        foreach (var block in columnv)
+                        {
+                            var s = block.Rectangle;
+                            s.Y -= speed;
+                            block.Rectangle = s; // check if needs to move back to the previous position
+                        }
+                    }
                     return true;
                 }
             }
 
-            for (int i = 0, currentColumn = temp.Column; i < temp.Blocks.Count; i++, currentColumn++)
+            // check if the element is colliding with another element
+            for (int i = 0, currentColumn = currentEl.Column; i < currentEl.Blocks.Count; i++, currentColumn++)
             {
+                // don't check if the current element is higher than the current column
                 if (currentEl.Blocks[i][^1].Row - 1 > columns[currentColumn].Count)
                 {
                     continue;
@@ -254,64 +264,39 @@ namespace Tetris
                     if (columns[currentColumn].ElementAt(j) is null) continue;
                     var block = columns[currentColumn].ElementAt(j).Item1;
 
-                    if (temp.Blocks[i][^1].Rectangle.Y + temp.Blocks[i][^1].Height > block.Y)
+                    if (currentEl.Blocks[i][^1].Rectangle.Y + currentEl.Blocks[i][^1].Height > block.Y)
                     {
+                        foreach (var columnv in currentEl.Blocks)
+                        {
+                            foreach (var blockw in columnv)
+                            {
+                                var s = blockw.Rectangle;
+                                s.Y -= speed;
+                                blockw.Rectangle = s; // check if needs to move back to the previous position
+                            }
+                        }
                         return true;
                     }
                 }
-            } 
+            }
 
-
-            /*for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
-            {
-
-            }*/
-
-            /*for (int i = currentEl.Column; i < currentEl.Column + columnBlocks; i++)
-            {
-                if (currentEl.Row - rowBlocks > columns[i].Count)
-                {
-                    continue;
-                }
-
-                for (int j = currentEl.Row - rowBlocks - 1; j >= 0; j--)
-                {
-                    if (columns[i].ElementAt(j) is null) continue;
-                    var block = columns[i].ElementAt(j).Item1;
-
-                    if (temp.Y + temp.Height > block.Y)
-                    {
-                        return true;
-                    }
-                }
-            }*/
-
-
-
-            currentEl = temp;
             int y = 0;
 
             for (int i = 0; i < currentEl.Blocks.Count; i++)
             {
-                //if (currentEl.Blocks[i][0] == null) continue;
-
                 y = currentEl.Blocks[i][0].Rectangle.Y;
             }
 
             currentRow = (int)Math.Ceiling(((background.Y + background.Height) - y) / (double)20);
             currentEl.Row = currentRow;
 
-            foreach (var column in temp.Blocks)
+            foreach (var column in currentEl.Blocks)
             {
                 foreach (var block in column)
                 {
                     block.Row = (int)Math.Ceiling(((background.Y + background.Height) - block.Rectangle.Y) / (double)20);
                 }
             }
-
-            /*currentEl.Rectangle = temp;
-            currentRow = (int)Math.Ceiling(((background.Y + background.Height) - (currentEl.Rectangle.Y)) / (double)20);
-            currentEl.Row = currentRow;*/
 
             return false;
         }
@@ -320,30 +305,121 @@ namespace Tetris
         {
             if (keyDelayActive) return;
 
-            Rectangle temp = currentEl.Rectangle;
+            //Tetramino temp = currentEl;
 
-            temp.X = GetUpdatedX(direction, temp);
-
-            if (IsSideCollisionWithBorder(direction, temp, background)) return;
-
-            int rowBlocks = currentEl.Height / BlockDimension;
-            int adjacentColumnIndex = GetAdjacentColumnIndexToElement(direction, currentEl);
-
-            for (int i = currentEl.Row - 1; i > currentEl.Row - rowBlocks - 1; i--)
+            foreach (var column in currentEl.Blocks)
             {
-                if (i >= columns[adjacentColumnIndex].Count) continue;
-                if (columns[adjacentColumnIndex].ElementAt(i) is null) continue;
+                foreach (var block in column)
+                {
+                    //if (ablock == null) continue;
 
-                Rectangle block = columns[adjacentColumnIndex].ElementAt(i).Item1;
-
-                if (IsSideCollisionWithBlock(direction, temp, block)) return;
+                    var s = block.Rectangle;
+                    //s.X += speed;
+                    s.X = GetUpdatedX(direction, s);
+                    block.Rectangle = s;
+                }
             }
 
-            currentEl.Rectangle = temp;
+            if (direction == Direction.Left)
+            {
+                // check if the element is out of bounds
+                foreach (var blocks in currentEl.Blocks[0])
+                {
+                    Block ablock = blocks; // check if the last ablock is not null
+                    if (IsSideCollisionWithBorder(direction, ablock.Rectangle, background))
+                    {
+                        MoveBack(direction);
+                        return;
+                    }
+                }
+            }
+            else if (direction == Direction.Right)
+            {
+                // check if the element is out of bounds
+                foreach (var blocks in currentEl.Blocks[^1])
+                {
+                    Block ablock = blocks; // check if the last ablock is not null
+                    if (IsSideCollisionWithBorder(direction, ablock.Rectangle, background))
+                    {
+                        MoveBack(direction);
+                        return;
+                    }
+                }
+            }
+
+            
+
+            // rows
+            for (int i = 0; i < currentEl.Blocks.Count; i++)
+            {
+                // columns
+                for (int j = 0; j < currentEl.Blocks[i].Count; j++)
+                {
+                    var curBlock = currentEl.Blocks[i][j];
+
+                    if (curBlock.Row >= columns[curBlock.Column - 1].Count) continue;
+                    var block = columns[curBlock.Column - 1].ElementAt(curBlock.Row - 1);
+                    if (block is null) continue;
+
+                    if (IsLeftCollisionWithBLock(curBlock.Rectangle, block.Item1))
+                    {
+                        MoveBack(direction);
+                        return;
+                    }
+                }
+            }
+
             currentEl.Column = GetAdjacentColumn(direction, currentEl);
             currentColumn = currentEl.Column;
 
+            foreach (var column in currentEl.Blocks)
+            {
+                foreach (var block in column)
+                {
+                    if (direction == Direction.Right)
+                    {
+                        block.Column++;
+                    }
+                    else if (direction == Direction.Left)
+                        block.Column--;
+                }
+            }
+
             keyDelayActive = true;
+        }
+
+        private void MoveBack(Direction direction)
+        {
+            if (direction == Direction.Left)
+            {
+                foreach (var column in currentEl.Blocks)
+                {
+                    foreach (var blockw in column)
+                    {
+                        //if (block == null) continue;
+
+                        var s = blockw.Rectangle;
+                        //s.X += speed;
+                        s.X = GetUpdatedX(Direction.Right, s);
+                        blockw.Rectangle = s;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var column in currentEl.Blocks)
+                {
+                    foreach (var blockw in column)
+                    {
+                        //if (block == null) continue;
+
+                        var s = blockw.Rectangle;
+                        //s.X += speed;
+                        s.X = GetUpdatedX(Direction.Left, s);
+                        blockw.Rectangle = s;
+                    }
+                }
+            }
         }
 
         private static int GetUpdatedToLeftX(Rectangle element)

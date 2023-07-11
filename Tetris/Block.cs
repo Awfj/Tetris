@@ -5,6 +5,23 @@ namespace Tetris
 {
     internal class Block
     {
+        public Block(Rectangle rectangle, int column, int row, GraphicsDevice graphicsDevice)
+        {
+            Column = column;
+            Row = row;
+
+            Width = Constants.BlockDimension;
+            Height = Constants.BlockDimension;
+
+            Rectangle = new(
+                rectangle.X,
+                rectangle.Y,
+                Width, Height);
+
+            Texture = new(graphicsDevice, 1, 1);
+            Texture.SetData(new Color[] { Color.White });
+        }
+
         public Block(int x, int y, int column, int row, GraphicsDevice graphicsDevice)
         {
             /*X = x;
