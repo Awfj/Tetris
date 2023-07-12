@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tetris.Tetraminos;
 using static Tetris.Constants;
 
 namespace Tetris
@@ -69,8 +70,7 @@ namespace Tetris
             backgroundTexture.SetData(new Color[] { Color.White });
 
             currentEl = RandomizeTetramino();
-            //currentColumn = currentEl.Column;
-            //currentRow = currentEl.Row;
+            //currentEl = new ZHorizontalTetramino(GraphicsDevice, background);
         }
 
         protected override void Update(GameTime gameTime)
@@ -93,7 +93,7 @@ namespace Tetris
 
             // collision detection
             //int columnBlocks = currentEl.Width / BlockDimension;
-            int rowBlocks = currentEl.Height / BlockDimension;
+            //int rowBlocks = currentEl.Height / BlockDimension;
 
             bool generateNext = MoveDown();
 
@@ -207,8 +207,7 @@ namespace Tetris
                 }
 
                 currentEl = RandomizeTetramino();
-                //currentColumn = currentEl.Column;
-                //currentRow = currentEl.Row;
+                //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0].Rectangle.X, currentEl.Blocks[0][0].Rectangle.Y);
             }
 
             base.Update(gameTime);
@@ -292,88 +291,6 @@ namespace Tetris
             return false;
         }
 
-        /*private bool MoveDown(int columnBlocks, int rowBlocks)
-        {
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    var s = block.Rectangle;
-                    s.Y += speed;
-                    block.Rectangle = s; // check if needs to move back to the previous position
-                }
-            }
-
-            // check if the element is out of bounds
-            foreach (var column in currentEl.Blocks)
-            {
-                Block lastBlock = column[^1]; // check if the last ablock is not null
-                if (lastBlock.Rectangle.Y + lastBlock.Rectangle.Height > background.Y + background.Height)
-                {
-                    foreach (var columnv in currentEl.Blocks)
-                    {
-                        foreach (var block in columnv)
-                        {
-                            var s = block.Rectangle;
-                            s.Y -= speed;
-                            block.Rectangle = s; // check if needs to move back to the previous position
-                        }
-                    }
-                    return true;
-                }
-            }
-
-            // check if the element is colliding with another element
-            for (int i = 0, currentColumn = currentEl.Column; i < currentEl.Blocks.Count; i++, currentColumn++)
-            {
-                // don't check if the current element is higher than the current column
-                if (currentEl.Blocks[i][^1].Row - 1 > columns[currentColumn].Count)
-                {
-                    continue;
-                }
-
-                for (int j = currentEl.Blocks[i][^1].Row - 2; j >= 0; j--)
-                {
-                    if (columns[currentColumn].ElementAt(j) is null) continue;
-                    var block = columns[currentColumn].ElementAt(j).Rectangle;
-
-                    if (currentEl.Blocks[i][^1].Rectangle.Y + currentEl.Blocks[i][^1].Height > block.Y)
-                    {
-                        foreach (var columnv in currentEl.Blocks)
-                        {
-                            foreach (var blockw in columnv)
-                            {
-                                var s = blockw.Rectangle;
-                                s.Y -= speed;
-                                blockw.Rectangle = s; // check if needs to move back to the previous position
-                            }
-                        }
-                        return true;
-                    }
-                }
-            }
-
-            *//*int y = 0;
-
-            for (int i = 0; i < currentEl.Blocks.Count; i++)
-            {
-                y = currentEl.Blocks[i][0].Rectangle.Y;
-            }*//*
-
-            //currentRow = (int)Math.Ceiling(((background.Y + background.Height) - y) / (double)20) - 1;
-            //currentEl.Row = currentRow;
-
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    block.Row = 20 - (int)Math.Ceiling(((background.Y + background.Height) - block.Rectangle.Y) / (double)20);
-                }
-            }
-
-            return false;
-        }*/
-
         private void Move(Direction direction)
         {
             if (keyDelayActive) return;
@@ -434,27 +351,6 @@ namespace Tetris
                     }
                 }
             }
-            
-
-            /*// rows
-            for (int i = 0; i < currentEl.Blocks.Count; i++)
-            {
-                // columns
-                for (int j = 0; j < currentEl.Blocks[i].Count; j++)
-                {
-                    var curBlock = currentEl.Blocks[i][j];
-
-                    if (curBlock.Row >= columns[curBlock.Column - 1].Count) continue;
-                    var block = columns[curBlock.Column - 1].ElementAt(curBlock.Row - 1);
-                    if (block is null) continue;
-
-                    if (IsLeftCollisionWithBLock(curBlock.Rectangle, block.Rectangle))
-                    {
-                        MoveBack(direction);
-                        return;
-                    }
-                }
-            }*/
 
             // change the position of the element
             foreach (var column in currentEl.Blocks)
@@ -487,93 +383,6 @@ namespace Tetris
 
             keyDelayActive = true;
         }
-
-        /*private void Move(Direction direction)
-        {
-            if (keyDelayActive) return;
-
-            //Tetramino temp = currentEl;
-
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    //if (ablock == null) continue;
-
-                    var s = block.Rectangle;
-                    //s.X += speed;
-                    s.X = GetUpdatedX(direction, s);
-                    block.Rectangle = s;
-                }
-            }
-
-            if (direction == Direction.Left)
-            {
-                // check if the element is out of bounds
-                foreach (var blocks in currentEl.Blocks[0])
-                {
-                    Block ablock = blocks; // check if the last ablock is not null
-                    if (IsSideCollisionWithBorder(direction, ablock.Rectangle, background))
-                    {
-                        MoveBack(direction);
-                        return;
-                    }
-                }
-            }
-            else if (direction == Direction.Right)
-            {
-                // check if the element is out of bounds
-                foreach (var blocks in currentEl.Blocks[^1])
-                {
-                    Block ablock = blocks; // check if the last ablock is not null
-                    if (IsSideCollisionWithBorder(direction, ablock.Rectangle, background))
-                    {
-                        MoveBack(direction);
-                        return;
-                    }
-                }
-            }
-
-            
-
-            // rows
-            for (int i = 0; i < currentEl.Blocks.Count; i++)
-            {
-                // columns
-                for (int j = 0; j < currentEl.Blocks[i].Count; j++)
-                {
-                    var curBlock = currentEl.Blocks[i][j];
-
-                    if (curBlock.Row >= columns[curBlock.Column - 1].Count) continue;
-                    var block = columns[curBlock.Column - 1].ElementAt(curBlock.Row - 1);
-                    if (block is null) continue;
-
-                    if (IsLeftCollisionWithBLock(curBlock.Rectangle, block.Rectangle))
-                    {
-                        MoveBack(direction);
-                        return;
-                    }
-                }
-            }
-
-            currentEl.Column = GetAdjacentColumn(direction, currentEl);
-            //currentColumn = currentEl.Column;
-
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    if (direction == Direction.Right)
-                    {
-                        block.Column++;
-                    }
-                    else if (direction == Direction.Left)
-                        block.Column--;
-                }
-            }
-
-            keyDelayActive = true;
-        }*/
 
         private void MoveBack(Direction direction)
         {
@@ -641,7 +450,8 @@ namespace Tetris
 
         private static int GetColumnAfterElement(Tetramino element)
         {
-            int elementHWidthInBlocks = element.Width / BlockDimension;
+            //int elementHWidthInBlocks = element.Width / BlockDimension;
+            int elementHWidthInBlocks = 0; // TODO: remove this
             return element.Column + elementHWidthInBlocks;
         }
 
@@ -727,6 +537,9 @@ namespace Tetris
                         break;
                     case Keys.Right:
                         Move(Direction.Right);
+                        break;
+                    case Keys.Up:
+                        Turn();
                         break;
                 }
             }
@@ -815,7 +628,21 @@ namespace Tetris
             }*/
 
             //return new StraightTetramino(GraphicsDevice, background);
-            return new SkewTetramino(GraphicsDevice, background);
+            //return new SkewTetramino(GraphicsDevice, background);
+            return new ZHorizontalTetramino(GraphicsDevice, background);
+        }
+
+        private void Turn()
+        {
+            if (keyDelayActive) return;
+
+            //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0].Rectangle.X, currentEl.Blocks[0][0].Rectangle.Y);
+            //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0].Rectangle.X, currentEl.Blocks[0][0].Rectangle.Y);
+            currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0]);
+
+            //currentEl.Rotate();
+
+            keyDelayActive = true;
         }
     }
 }
