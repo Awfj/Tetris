@@ -158,7 +158,6 @@ namespace Tetris
                             columns[i].Enqueue(currentBlock);
                         }
                     }
-
                 }
 
                 // find full rows and remove them
@@ -169,7 +168,7 @@ namespace Tetris
                 {
                     bool isRowFull = CheckIfRowIsFull(i - count);
 
-                    if (isRowFull)
+                    if (isRowFull) // TODO: check if workds correctly
                     {
                         RemoveRow();
                         count++;
@@ -198,17 +197,19 @@ namespace Tetris
 
             _spriteBatch.Draw(backgroundTexture, background, Color.Pink);
 
+            // draw the blocks
             foreach (var column in columns)
             {
                 foreach (var block in column)
                 {
                     if (block != null)
                     {
-                        _spriteBatch.Draw(block.Texture, block.Rectangle, currentEl.Color);
+                        _spriteBatch.Draw(block.Texture, block.Rectangle, block.Color);
                     }
                 }
             }
 
+            // draw the current element
             foreach (var column in currentEl.Blocks)
             {
                 foreach (var block in column)
@@ -517,7 +518,7 @@ namespace Tetris
             return true;
         }
 
-        private void RemoveRow()
+        private void RemoveRow() // TODO: check if workds correctly
         {
             for (int i = 0; i < columns.Length; i++)
             {
@@ -539,7 +540,7 @@ namespace Tetris
 
         private Tetramino RandomizeTetramino()
         {
-            int type = new Random().Next(0, 2);
+            int type = new Random().Next(0, 3);
 
             switch (type)
             {
@@ -552,7 +553,7 @@ namespace Tetris
             }
         }
 
-        private void Rotate()
+        private void Rotate() // TODO: restrict rotation when it collides with the border
         {
             if (keyDelayActive) return;
 

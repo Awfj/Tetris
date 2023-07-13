@@ -19,7 +19,7 @@ namespace Tetris.Tetraminos
         public abstract void Rotate(GraphicsDevice graphicsDevice);
 
 
-        protected void Make(GraphicsDevice graphicsDevice, Rectangle background)
+        protected void Make(GraphicsDevice graphicsDevice, Color color, Rectangle background)
         {
             Set();
 
@@ -36,6 +36,7 @@ namespace Tetris.Tetraminos
                             background.Y + Constants.BlockDimension * (InitialRow + j),
                             InitialColumn + i,
                             InitialRow + j,
+                            color,
                             graphicsDevice);
 
                     Blocks[i].Add(newBlock);
@@ -43,7 +44,7 @@ namespace Tetris.Tetraminos
             }
         }
 
-        protected void Make(GraphicsDevice graphicsDevice, Block block)
+        protected void Make(GraphicsDevice graphicsDevice, Color color, Block block)
         {
             Blocks = new();
             Set();
@@ -61,6 +62,7 @@ namespace Tetris.Tetraminos
                             block.Rectangle.Y + Constants.BlockDimension * j,
                             block.Column + i,
                             block.Row + j,
+                            color,
                             graphicsDevice);
 
                     Blocks[i].Add(newBlock);

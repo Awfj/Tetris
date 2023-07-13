@@ -5,20 +5,19 @@ namespace Tetris
 {
     internal class Block
     {
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public int Width { get; set; } = Constants.BlockDimension;
+        public int Height { get; set; } = Constants.BlockDimension;
         public int Column { get; set; }
         public int Row { get; set; }
+        public Color Color { get; }
         public Rectangle Rectangle { get; set; }
         public Texture2D Texture { get; }
 
-        public Block(int x, int y, int column, int row, GraphicsDevice graphicsDevice)
+        public Block(int x, int y, int column, int row, Color color, GraphicsDevice graphicsDevice)
         {
             Column = column;
             Row = row;
-
-            Width = Constants.BlockDimension;
-            Height = Constants.BlockDimension;
+            Color = color;
 
             Rectangle = new(
                 x,

@@ -12,7 +12,7 @@ namespace Tetris.Tetraminos
             Color = Color.Red;
             Type = new Random().Next(0, 2);
 
-            Make(graphicsDevice, background);
+            Make(graphicsDevice, Color, background);
         }
 
         public override void Rotate(GraphicsDevice graphicsDevice)
@@ -20,7 +20,7 @@ namespace Tetris.Tetraminos
             if (Type == 0) Type = 1;
             else Type = 0;
 
-            Make(graphicsDevice, Blocks[0][0]);
+            Make(graphicsDevice, Color, Blocks[0][0]);
         }
 
         protected override void Set()
