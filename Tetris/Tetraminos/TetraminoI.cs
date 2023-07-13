@@ -1,14 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Tetris.Tetraminos
 {
     internal class TetraminoI : Tetramino
     {
-        public TetraminoI(GraphicsDevice graphicsDevice, Rectangle background, int type)
+        public TetraminoI(GraphicsDevice graphicsDevice, Rectangle background)
         {
             Color = Color.Aqua;
-            Type = type;
+            Type = new Random().Next(0, 2);
 
             Make(graphicsDevice, background);
         }

@@ -5,10 +5,10 @@ namespace Tetris.Tetraminos
 {
     internal class TetraminoO : Tetramino
     {
-        public TetraminoO(GraphicsDevice graphicsDevice, Rectangle background, int type)
+        public TetraminoO(GraphicsDevice graphicsDevice, Rectangle background)
         {
             Color = Color.Yellow;
-            Type = type;
+            Type = 0;
 
             Make(graphicsDevice, background);
         }

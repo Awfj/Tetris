@@ -17,10 +17,6 @@ namespace Tetris
         Rectangle background;
         Texture2D backgroundTexture;
 
-        // starts from 0
-        //int currentColumn;
-        //int currentRow;
-
         int speed = 2;
         int TotalRows = 20;
 
@@ -70,7 +66,6 @@ namespace Tetris
             backgroundTexture.SetData(new Color[] { Color.White });
 
             currentEl = RandomizeTetramino();
-            //currentEl = new ZHorizontalTetramino(GraphicsDevice, background);
         }
 
         protected override void Update(GameTime gameTime)
@@ -92,9 +87,6 @@ namespace Tetris
             }
 
             // collision detection
-            //int columnBlocks = currentEl.Width / BlockDimension;
-            //int rowBlocks = currentEl.Height / BlockDimension;
-
             bool generateNext = MoveDown();
 
             if (generateNext == false)
@@ -105,7 +97,6 @@ namespace Tetris
             {
                 // fill the block with block and generate a new element
                 int currentColumn = currentEl.Blocks[0][0].Column;
-                //for (int i = currentColumn; i < currentColumn + currentEl.Columns; i++) // TODO: fix this
                 for (int i = currentColumn; i < currentColumn + currentEl.Blocks.Count; i++) // TODO: fix this
                 {
                     // if the current row already exists
@@ -135,11 +126,6 @@ namespace Tetris
                             }
                             else
                             {
-                                /*Rectangle tempRectangle = block.Rectangle;
-                                tempRectangle.Y = background.Y + BackgroundHeight - BlockDimension * (TotalRows - block.InitialRow);
-
-                                block.Rectangle = tempRectangle;*/
-
                                 temp.Enqueue(block);
                             }
                         }
@@ -163,23 +149,12 @@ namespace Tetris
                         // add block to the block
                         for (int j = nextRow + rowCount - 1; j >= nextRow; j--)
                         {
-                            /*int column = i;
-                            int row = j + 1;
-                            Block block = new(
-                                background.X + BlockDimension * column, 
-                                background.Y + BackgroundHeight - BlockDimension * row,
-                                column, row, GraphicsDevice);*/
-                            //columns[i].Enqueue(block);
                             Block currentBlock = currentEl.Blocks[i - currentColumn][j - nextRow];
 
                             Rectangle tempRectangle = currentBlock.Rectangle;
                             tempRectangle.Y = background.Y + BackgroundHeight - BlockDimension * (TotalRows - currentBlock.Row);
 
                             currentBlock.Rectangle = tempRectangle;
-
-                        /*    background.X + Constants.BlockDimension * (InitialColumn + i),
-                    background.Y + Constants.BlockDimension * (InitialRow + j)*/
-
                             columns[i].Enqueue(currentBlock);
                         }
                     }
@@ -187,18 +162,19 @@ namespace Tetris
                 }
 
                 // find full rows and remove them
-                /*int minColumnHeight = FindMinColumnHeight();
+                int minColumnHeight = FindMinColumnHeight();
                 int count = 0;
 
                 for (int i = 0; i < minColumnHeight; i++)
                 {
                     bool isRowFull = CheckIfRowIsFull(i - count);
+
                     if (isRowFull)
                     {
                         RemoveRow();
                         count++;
                     }
-                }*/
+                }
 
                 // when reaches the top border, the game ends
                 if (columns[currentColumn].Count == TotalRows)
@@ -208,7 +184,6 @@ namespace Tetris
                 }
 
                 currentEl = RandomizeTetramino();
-                //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0].Rectangle.X, currentEl.Blocks[0][0].Rectangle.Y);
             }
 
             base.Update(gameTime);
@@ -238,7 +213,7 @@ namespace Tetris
             {
                 foreach (var block in column)
                 {
-                    _spriteBatch.Draw(block.Texture, block.Rectangle, Color.Orange);
+                    _spriteBatch.Draw(block.Texture, block.Rectangle, currentEl.Color);
                 }
             }
 
@@ -320,11 +295,9 @@ namespace Tetris
                 {
                     foreach (var block in column)
                     {
-                        //int nextRow = TotalRows - block.InitialRow - 2;
                         int nextColumn = block.Column - 1;
                         int row = TotalRows - block.Row - 1;
 
-                        //if (columns[block.InitialColumn].Count <= nextRow) continue;
                         if (row >= columns[nextColumn].Count) continue;
                         if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
                         {
@@ -339,11 +312,9 @@ namespace Tetris
                 {
                     foreach (var block in column)
                     {
-                        //int nextRow = TotalRows - block.InitialRow - 2;
                         int nextColumn = block.Column + 1;
                         int row = TotalRows - block.Row - 1;
 
-                        //if (columns[block.InitialColumn].Count <= nextRow) continue;
                         if (row >= columns[nextColumn].Count) continue;
                         if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
                         {
@@ -358,8 +329,6 @@ namespace Tetris
             {
                 foreach (var block in column)
                 {
-                    //if (ablock == null) continue;
-
                     var s = block.Rectangle;
 
                     if (direction == Direction.Right)
@@ -375,8 +344,6 @@ namespace Tetris
             }
 
             // change the column of the element
-            //currentEl.InitialColumn = GetAdjacentColumn(direction, currentEl);
-
             foreach (var column in currentEl.Blocks)
             {
                 foreach (var block in column)
@@ -552,47 +519,37 @@ namespace Tetris
 
         private void RemoveRow()
         {
-            for (int j = 0; j < columns.Length; j++)
+            for (int i = 0; i < columns.Length; i++)
             {
                 // remove filled row from every adjacentColumnIndex
-                columns[j].Dequeue();
+                columns[i].Dequeue();
 
-                // move the block down
-                for (int k = 0; k < columns[j].Count; k++)
+                for (int j = 0; j < columns[i].Count; j++)
                 {
-
-                    if (columns[j].ElementAt(0) is not null)
+                    if (columns[i].ElementAt(0) is not null)
                     {
-                        // TPDP: fix this
-                        var g = columns[j].Dequeue();
-                        var p = g.Rectangle;
-                        p.Y += BlockDimension;
-                        columns[j].Enqueue(g); // TPDP: fix this
+                        Block block = columns[i].ElementAt(j);
+                        Rectangle rect = block.Rectangle;
+                        rect.Y += BlockDimension;
+                        block.Rectangle = rect;
                     }
                 }
             }
         }
 
-        /*private int GenerateColumnNumber()
-        {
-            return new Random().Next(0, TotalColumns - 3); // if element is square, totalColumns - 1
-        }*/
-
         private Tetramino RandomizeTetramino()
         {
-            int type = new Random().Next(0, 3);
+            int type = new Random().Next(0, 2);
 
-            switch (n)
+            switch (type)
             {
                 case 0:
-                    return new StraightTetramino(GraphicsDevice, background);
+                    return new TetraminoI(GraphicsDevice, background);
+                case 1:
+                    return new TetraminoZ(GraphicsDevice, background);
                 default:
                     return new TetraminoO(GraphicsDevice, background);
             }
-
-            //return new StraightTetramino(GraphicsDevice, background);
-            //return new SkewTetramino(GraphicsDevice, background);
-            return new TetraminoI(GraphicsDevice, background, 1);
         }
 
         private void Rotate()

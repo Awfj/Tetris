@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 namespace Tetris.Tetraminos
 {
@@ -17,6 +16,8 @@ namespace Tetris.Tetraminos
         protected int[,] Skip { get; set; } = new int[0, 0];
 
         protected abstract void Set();
+        public abstract void Rotate(GraphicsDevice graphicsDevice);
+
 
         protected void Make(GraphicsDevice graphicsDevice, Rectangle background)
         {
@@ -79,10 +80,5 @@ namespace Tetris.Tetraminos
 
             return false;
         }
-
-        /*public int Width { get; set; }
-        public int Height { get; set; }*/
-
-        public abstract void Rotate(GraphicsDevice graphicsDevice);
     }
 }
