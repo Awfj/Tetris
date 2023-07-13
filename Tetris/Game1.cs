@@ -514,7 +514,7 @@ namespace Tetris
                         Move(Direction.Right);
                         break;
                     case Keys.Up:
-                        Turn();
+                        Rotate();
                         break;
                 }
             }
@@ -580,29 +580,26 @@ namespace Tetris
 
         private Tetramino RandomizeTetramino()
         {
-            int n = new Random().Next(0, 2);
+            int type = new Random().Next(0, 3);
 
-            /*switch (n)
+            switch (n)
             {
                 case 0:
                     return new StraightTetramino(GraphicsDevice, background);
                 default:
-                    return new SquareTetramino(GraphicsDevice, background);
-            }*/
+                    return new TetraminoO(GraphicsDevice, background);
+            }
 
             //return new StraightTetramino(GraphicsDevice, background);
             //return new SkewTetramino(GraphicsDevice, background);
-            return new ZHorizontalTetramino(GraphicsDevice, background, 0);
+            return new TetraminoI(GraphicsDevice, background, 1);
         }
 
-        private void Turn()
+        private void Rotate()
         {
             if (keyDelayActive) return;
 
-            //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0]);
-
             currentEl.Rotate(GraphicsDevice);
-
             keyDelayActive = true;
         }
     }
