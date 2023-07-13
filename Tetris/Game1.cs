@@ -104,8 +104,9 @@ namespace Tetris
             else
             {
                 // fill the block with block and generate a new element
-                int currentColumn = currentEl.Column;
-                for (int i = currentColumn; i < currentColumn + currentEl.Columns; i++) // TODO: fix this
+                int currentColumn = currentEl.Blocks[0][0].Column;
+                //for (int i = currentColumn; i < currentColumn + currentEl.Columns; i++) // TODO: fix this
+                for (int i = currentColumn; i < currentColumn + currentEl.Blocks.Count; i++) // TODO: fix this
                 {
                     // if the current row already exists
                     // for nesting
@@ -135,7 +136,7 @@ namespace Tetris
                             else
                             {
                                 /*Rectangle tempRectangle = block.Rectangle;
-                                tempRectangle.Y = background.Y + BackgroundHeight - BlockDimension * (TotalRows - block.Row);
+                                tempRectangle.Y = background.Y + BackgroundHeight - BlockDimension * (TotalRows - block.InitialRow);
 
                                 block.Rectangle = tempRectangle;*/
 
@@ -176,8 +177,8 @@ namespace Tetris
 
                             currentBlock.Rectangle = tempRectangle;
 
-                        /*    background.X + Constants.BlockDimension * (Column + i),
-                    background.Y + Constants.BlockDimension * (Row + j)*/
+                        /*    background.X + Constants.BlockDimension * (InitialColumn + i),
+                    background.Y + Constants.BlockDimension * (InitialRow + j)*/
 
                             columns[i].Enqueue(currentBlock);
                         }
@@ -220,7 +221,7 @@ namespace Tetris
             // TODO: Add your drawing code here
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(backgroundTexture, background, Color.Red);
+            _spriteBatch.Draw(backgroundTexture, background, Color.Pink);
 
             foreach (var column in columns)
             {
@@ -228,7 +229,7 @@ namespace Tetris
                 {
                     if (block != null)
                     {
-                        _spriteBatch.Draw(block.Texture, block.Rectangle, Color.White);
+                        _spriteBatch.Draw(block.Texture, block.Rectangle, currentEl.Color);
                     }
                 }
             }
@@ -319,11 +320,11 @@ namespace Tetris
                 {
                     foreach (var block in column)
                     {
-                        //int nextRow = TotalRows - block.Row - 2;
+                        //int nextRow = TotalRows - block.InitialRow - 2;
                         int nextColumn = block.Column - 1;
                         int row = TotalRows - block.Row - 1;
 
-                        //if (columns[block.Column].Count <= nextRow) continue;
+                        //if (columns[block.InitialColumn].Count <= nextRow) continue;
                         if (row >= columns[nextColumn].Count) continue;
                         if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
                         {
@@ -338,11 +339,11 @@ namespace Tetris
                 {
                     foreach (var block in column)
                     {
-                        //int nextRow = TotalRows - block.Row - 2;
+                        //int nextRow = TotalRows - block.InitialRow - 2;
                         int nextColumn = block.Column + 1;
                         int row = TotalRows - block.Row - 1;
 
-                        //if (columns[block.Column].Count <= nextRow) continue;
+                        //if (columns[block.InitialColumn].Count <= nextRow) continue;
                         if (row >= columns[nextColumn].Count) continue;
                         if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
                         {
@@ -360,13 +361,21 @@ namespace Tetris
                     //if (ablock == null) continue;
 
                     var s = block.Rectangle;
-                    s.X = GetUpdatedX(direction, s);
+
+                    if (direction == Direction.Right)
+                    {
+                        s.X = GetUpdatedToRightX(s);
+                    }
+                    else if (direction == Direction.Left)
+                        s.X = GetUpdatedToLeftX(s);
+
+
                     block.Rectangle = s;
                 }
             }
 
             // change the column of the element
-            currentEl.Column = GetAdjacentColumn(direction, currentEl);
+            //currentEl.InitialColumn = GetAdjacentColumn(direction, currentEl);
 
             foreach (var column in currentEl.Blocks)
             {
@@ -384,40 +393,6 @@ namespace Tetris
             keyDelayActive = true;
         }
 
-        private void MoveBack(Direction direction)
-        {
-            if (direction == Direction.Left)
-            {
-                foreach (var column in currentEl.Blocks)
-                {
-                    foreach (var blockw in column)
-                    {
-                        //if (block == null) continue;
-
-                        var s = blockw.Rectangle;
-                        //s.X += speed;
-                        s.X = GetUpdatedX(Direction.Right, s);
-                        blockw.Rectangle = s;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var column in currentEl.Blocks)
-                {
-                    foreach (var blockw in column)
-                    {
-                        //if (block == null) continue;
-
-                        var s = blockw.Rectangle;
-                        //s.X += speed;
-                        s.X = GetUpdatedX(Direction.Left, s);
-                        blockw.Rectangle = s;
-                    }
-                }
-            }
-        }
-
         private static int GetUpdatedToLeftX(Rectangle element)
         {
             return element.X - 20;
@@ -428,7 +403,7 @@ namespace Tetris
             return element.X + 20;
         }
 
-        private static bool IsLeftCollisionWithBorder(Rectangle element, Rectangle background)
+        /*private static bool IsLeftCollisionWithBorder(Rectangle element, Rectangle background)
         {
             return element.X < background.X;
         }
@@ -440,19 +415,19 @@ namespace Tetris
 
         private static int GetPrevColumn(Tetramino element)
         {
-            return element.Column - 1;
+            return element.InitialColumn - 1;
         }
 
         private static int GetNextColumn(Tetramino element)
         {
-            return element.Column + 1;
+            return element.InitialColumn + 1;
         }
 
         private static int GetColumnAfterElement(Tetramino element)
         {
             //int elementHWidthInBlocks = element.Width / BlockDimension;
             int elementHWidthInBlocks = 0; // TODO: remove this
-            return element.Column + elementHWidthInBlocks;
+            return element.InitialColumn + elementHWidthInBlocks;
         }
 
         private static bool IsLeftCollisionWithBLock(Rectangle element, Rectangle block)
@@ -463,9 +438,9 @@ namespace Tetris
         private static bool IsRightCollisionWithBlock(Rectangle element, Rectangle block)
         {
             return element.X + element.Width >= block.X;
-        }
+        }*/
 
-        private Dictionary<Direction, Tuple<
+        /*private Dictionary<Direction, Tuple<
             Func<Rectangle, int>,
             Func<Rectangle, Rectangle, bool>, 
             Func<Tetramino, int>,
@@ -494,9 +469,9 @@ namespace Tetris
         private int GetUpdatedX(Direction direction, Rectangle element)
         {
             return _directionMap[direction].Item1.Invoke(element);
-        }
+        }*/
 
-        private bool IsSideCollisionWithBorder(Direction direction, Rectangle element, Rectangle background)
+        /*private bool IsSideCollisionWithBorder(Direction direction, Rectangle element, Rectangle background)
         {
             return _directionMap[direction].Item2.Invoke(element, background);
         }
@@ -514,7 +489,7 @@ namespace Tetris
         private int GetAdjacentColumn(Direction direction, Tetramino element)
         {
             return _directionMap[direction].Item5.Invoke(element);
-        }
+        }*/
 
         private enum Direction
         {
@@ -598,18 +573,6 @@ namespace Tetris
             }
         }
 
-        private Tuple<Rectangle, Texture2D> CreateBlock(int column, int row)
-        {
-            Rectangle block = new(
-                background.X + BlockDimension * column,
-                background.Y + BackgroundHeight - BlockDimension * row,
-                BlockDimension, BlockDimension);
-            Texture2D blockTexture = new(GraphicsDevice, 1, 1);
-            blockTexture.SetData(new Color[] { Color.White });
-
-            return Tuple.Create(block, blockTexture);
-        }
-
         /*private int GenerateColumnNumber()
         {
             return new Random().Next(0, TotalColumns - 3); // if element is square, totalColumns - 1
@@ -629,18 +592,16 @@ namespace Tetris
 
             //return new StraightTetramino(GraphicsDevice, background);
             //return new SkewTetramino(GraphicsDevice, background);
-            return new ZHorizontalTetramino(GraphicsDevice, background);
+            return new ZHorizontalTetramino(GraphicsDevice, background, 0);
         }
 
         private void Turn()
         {
             if (keyDelayActive) return;
 
-            //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0].Rectangle.X, currentEl.Blocks[0][0].Rectangle.Y);
-            //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0].Rectangle.X, currentEl.Blocks[0][0].Rectangle.Y);
-            currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0]);
+            //currentEl = new ZHorizontalTetramino(GraphicsDevice, currentEl.Blocks[0][0]);
 
-            //currentEl.Rotate();
+            currentEl.Rotate(GraphicsDevice);
 
             keyDelayActive = true;
         }

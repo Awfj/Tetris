@@ -1,16 +1,27 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
-using System.ComponentModel;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 namespace Tetris.Tetraminos
 {
     internal class ZHorizontalTetramino : Tetramino
     {
-        public ZHorizontalTetramino(GraphicsDevice graphicsDevice, Rectangle background)
+        public ZHorizontalTetramino(GraphicsDevice graphicsDevice, Rectangle background, int type)
         {
-            Columns = 3;
-            Rows = 2;
+            Color = Color.Red;
+
+            switch (type)
+            {
+                case 0:
+                    Columns = 3;
+                    Rows = 2;
+                    break;
+                case 1:
+                    Columns = 2;
+                    Rows = 3;
+                    break;
+            }
 
             for (int i = 0; i < Columns; i++)
             {
@@ -18,15 +29,13 @@ namespace Tetris.Tetraminos
 
                 for (int j = 0; j < Rows; j++)
                 {
-                    if (i == 0 && j == 1 ||
-                        i == 2 && j == 0)
-                        continue;
+                    if (Check(type, i, j)) continue;
 
                     Block block = new(
-                    background.X + Constants.BlockDimension * (Column + i),
-                    background.Y + Constants.BlockDimension * (Row + j),
-                    Column + i,
-                    Row + j,
+                    background.X + Constants.BlockDimension * (InitialColumn + i),
+                    background.Y + Constants.BlockDimension * (InitialRow + j),
+                    InitialColumn + i,
+                    InitialRow + j,
                     graphicsDevice);
 
                     Blocks[i].Add(block);
@@ -34,12 +43,44 @@ namespace Tetris.Tetraminos
             }
         }
 
-        public ZHorizontalTetramino(GraphicsDevice graphicsDevice, Block block)
+        private bool Check(int type, int i, int j)
+        {
+            int[,] skip;
+
+            switch (type)
+            {
+                case 1:
+                    skip = new[,] { { 0, 1 }, { 2, 0 } };
+                    break;
+                default:
+                    skip = new[,] { { 0, 0 }, { 1, 2 } };
+                    break;
+            }
+
+
+            for (int k = 0; k < skip.GetLength(0); k++)
+            {
+                if (i == skip[k, 0] && j == skip[k, 1])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void Rotate0(GraphicsDevice graphicsDevice)
+        {
+
+        }
+
+        /*private void Rotate90(GraphicsDevice graphicsDevice)
         {
             Columns = 2;
             Rows = 3;
-            Column = block.Column;
-            Row = block.Row;
+
+            Block block = Blocks[0][0];
+            Blocks = new();
 
             for (int i = 0; i < Columns; i++)
             {
@@ -54,45 +95,56 @@ namespace Tetris.Tetraminos
                     Block newBlock = new(
                     block.Rectangle.X + Constants.BlockDimension * i,
                     block.Rectangle.Y + Constants.BlockDimension * j,
-                    Column + i,
-                    Row + j,
+                    block.Column + i,
+                    block.Row + j,
                     graphicsDevice);
+
+                    Blocks[i].Add(newBlock);
+                }
+            }
+        }*/
+
+        private void Make(GraphicsDevice graphicsDevice, int type, bool isNew)
+        {
+            Block block = Blocks[0][0];
+            Blocks = new();
+
+            for (int i = 0; i < Columns; i++)
+            {
+                Blocks.Add(new List<Block>());
+
+                for (int j = 0, k = Rows - 1; j < Rows; j++, k--)
+                {
+                    if (Check(type, i, j)) continue;
+
+                    Block newBlock;
+                    if (isNew)
+                    {
+                        newBlock = new(
+                        background.X + Constants.BlockDimension * (InitialColumn + i),
+                            background.Y + Constants.BlockDimension * (InitialRow + j),
+                            InitialColumn + i,
+                            InitialRow + j,
+                            graphicsDevice);
+                    } 
+                    else
+                    {
+                        newBlock = new(
+                            block.Rectangle.X + Constants.BlockDimension * i,
+                            block.Rectangle.Y + Constants.BlockDimension * j,
+                            block.Column + i,
+                            block.Row + j,
+                            graphicsDevice);
+                    }
 
                     Blocks[i].Add(newBlock);
                 }
             }
         }
 
-        public override void Rotate()
+        public override void Rotate(GraphicsDevice graphicsDevice)
         {
-            
+
         }
-
-        /*public ZHorizontalTetramino(GraphicsDevice graphicsDevice, int x, int y)
-        {
-            Columns = 3;
-            Rows = 2;
-
-            for (int i = 0; i < Columns; i++)
-            {
-                Blocks.Add(new List<Block>());
-
-                for (int j = 0; j < Rows; j++)
-                {
-                    if (i == 0 && j == 1 ||
-                        i == 2 && j == 0)
-                        continue;
-
-                    Block block = new(
-                    x + Constants.BlockDimension * (Column + i),
-                    y + Constants.BlockDimension * (Row + j),
-                    Column + i,
-                    Row + j,
-                    graphicsDevice);
-
-                    Blocks[i].Add(block);
-                }
-            }
-        }*/
     }
 }

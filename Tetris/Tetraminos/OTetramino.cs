@@ -18,10 +18,10 @@ namespace Tetris.Tetraminos
                 for (int j = 0; j < Rows; j++)
                 {
                     Block block = new(
-                    background.X + Constants.BlockDimension * (Column + i),
-                    background.Y + Constants.BlockDimension * (Row + j),
-                    Column + i,
-                    Row + j,
+                    background.X + Constants.BlockDimension * (InitialColumn + i),
+                    background.Y + Constants.BlockDimension * (InitialRow + j),
+                    InitialColumn + i,
+                    InitialRow + j,
                     graphicsDevice);
 
                     Blocks[i].Add(block);
@@ -29,6 +29,6 @@ namespace Tetris.Tetraminos
             }
         }
 
-        public override void Rotate() { }
+        public override void Rotate(GraphicsDevice graphicsDevice) { }
     }
 }
