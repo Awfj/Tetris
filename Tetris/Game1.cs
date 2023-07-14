@@ -18,7 +18,6 @@ namespace Tetris
         Texture2D backgroundTexture;
 
         int speed = 2;
-        int TotalRows = 20;
 
         int keyDelay = Delay;
         bool keyDelayActive = false;
@@ -87,7 +86,7 @@ namespace Tetris
             }
 
             // collision detection
-            bool generateNext = MoveDown();
+            bool generateNext = MoveVertically();
 
             if (generateNext == false)
             {
@@ -168,7 +167,7 @@ namespace Tetris
                 {
                     bool isRowFull = CheckIfRowIsFull(i - count);
 
-                    if (isRowFull) // TODO: check if workds correctly
+                    if (isRowFull) // TODO: check if works correctly
                     {
                         RemoveRow();
                         count++;
@@ -223,61 +222,41 @@ namespace Tetris
             base.Draw(gameTime);
         }
 
-        private bool MoveDown()
+        private bool MoveVertically()
         {
-            // check if the element is at the bottom
-            foreach (var column in currentEl.Blocks)
-            {
-                if (column[^1].Row >= 19) return true;
-            }
+            Direction direction = Direction.Down;
 
-            // check if the element collides with another element
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    int nextRow = TotalRows - block.Row - 2;
-                    if (columns[block.Column].Count <= nextRow) continue;
-                    if (columns[block.Column].ElementAt(nextRow) != null)
-                    {
-                        return true;
-                    }
-                }
-            }
+            if (CheckIfCollidesWithSideBorder(direction)) return true;
+            if (CheckIfCollidesWithBlock(direction)) return true;
 
-            // change the position of the element
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    var s = block.Rectangle;
-                    s.Y += speed;
-                    block.Rectangle = s; // if speed < TotalRows
-                }
-            }
-
-            // change the row of the element
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    block.Row = TotalRows - (int)Math.Ceiling(((background.Y + background.Height) - block.Rectangle.Y) / (double)20);
-                }
-            }
+            MoveElement(direction);
+            ChangeRow(direction);
 
             return false;
         }
 
-        private void Move(Direction direction)
+        private void MoveHorizontally(Direction direction)
         {
             if (keyDelayActive) return;
+            if (CheckIfCollidesWithSideBorder(direction)) return;
+            if (CheckIfCollidesWithBlock(direction)) return;
 
-            // check if the element is out of bounds
+
+            MoveElement(direction);
+            ChangeColumn(direction);
+
+            keyDelayActive = true;
+        }
+
+        private bool CheckIfCollidesWithSideBorder(Direction direction)
+        {
+            //return _directionMap[direction].Item2.Invoke(element, background);
+
             if (direction == Direction.Left)
             {
                 foreach (var block in currentEl.Blocks[0])
                 {
-                    if (block.Column <= 0) return;
+                    if (block.Column <= 0) return true;
 
                 }
             }
@@ -285,11 +264,24 @@ namespace Tetris
             {
                 foreach (var block in currentEl.Blocks[^1])
                 {
-                    if (block.Column >= 14) return; // 14 is last column index
+                    if (block.Column >= TotalColumns - 1) return true;
+                }
+            }
+            else if (direction == Direction.Down)
+            {
+                foreach (var column in currentEl.Blocks)
+                {
+                    if (column[^1].Row >= 19) return true;
                 }
             }
 
-            // check if the element collides with another element
+            return false;
+        }
+
+        private bool CheckIfCollidesWithBlock(Direction direction)
+        {
+            //return _directionMap[direction].Item4.Invoke(element, block);
+
             if (direction == Direction.Left)
             {
                 foreach (var column in currentEl.Blocks)
@@ -302,7 +294,7 @@ namespace Tetris
                         if (row >= columns[nextColumn].Count) continue;
                         if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
                         {
-                            return;
+                            return true;
                         }
                     }
                 }
@@ -319,32 +311,69 @@ namespace Tetris
                         if (row >= columns[nextColumn].Count) continue;
                         if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
                         {
-                            return;
+                            return true;
+                        }
+                    }
+                }
+            }
+            else if (direction == Direction.Down)
+            {
+                foreach (var column in currentEl.Blocks)
+                {
+                    foreach (var block in column)
+                    {
+                        int nextRow = TotalRows - block.Row - 2;
+                        if (columns[block.Column].Count <= nextRow) continue;
+                        if (columns[block.Column].ElementAt(nextRow) != null)
+                        {
+                            return true;
                         }
                     }
                 }
             }
 
-            // change the position of the element
+            return false;
+        }
+
+        private void MoveElement(Direction direction)
+        {
             foreach (var column in currentEl.Blocks)
             {
                 foreach (var block in column)
                 {
                     var s = block.Rectangle;
 
-                    if (direction == Direction.Right)
+                    if (direction == Direction.Left)
+                    {
+                        s.X = GetUpdatedToLeftX(s);
+                    }
+                    else if (direction == Direction.Right)
                     {
                         s.X = GetUpdatedToRightX(s);
                     }
-                    else if (direction == Direction.Left)
-                        s.X = GetUpdatedToLeftX(s);
-
+                    else if (direction == Direction.Down)
+                    {
+                        s.Y += speed; // if speed < TotalRows
+                    }
 
                     block.Rectangle = s;
                 }
             }
+        }
+        
+        private void ChangeRow(Direction direction)
+        {
+            foreach (var column in currentEl.Blocks)
+            {
+                foreach (var block in column)
+                {
+                    block.Row = TotalRows - (int)Math.Ceiling(((background.Y + background.Height) - block.Rectangle.Y) / (double)TotalRows);
+                }
+            }
+        }
 
-            // change the column of the element
+        private void ChangeColumn(Direction direction)
+        {
             foreach (var column in currentEl.Blocks)
             {
                 foreach (var block in column)
@@ -357,8 +386,6 @@ namespace Tetris
                         block.Column--;
                 }
             }
-
-            keyDelayActive = true;
         }
 
         private static int GetUpdatedToLeftX(Rectangle element)
@@ -439,20 +466,12 @@ namespace Tetris
             return _directionMap[direction].Item1.Invoke(element);
         }*/
 
-        /*private bool IsSideCollisionWithBorder(Direction direction, Rectangle element, Rectangle background)
-        {
-            return _directionMap[direction].Item2.Invoke(element, background);
-        }
-
-        private int GetAdjacentColumnIndexToElement(Direction direction, Tetramino element)
+        /*private int GetAdjacentColumnIndexToElement(Direction direction, Tetramino element)
         {
             return _directionMap[direction].Item3.Invoke(element);
         }
 
-        private bool IsSideCollisionWithBlock(Direction direction, Rectangle element, Rectangle block)
-        {
-            return _directionMap[direction].Item4.Invoke(element, block);
-        }
+        
 
         private int GetAdjacentColumn(Direction direction, Tetramino element)
         {
@@ -462,7 +481,8 @@ namespace Tetris
         private enum Direction
         {
             Left,
-            Right
+            Right,
+            Down
         }
 
         private void HandleInput()
@@ -476,10 +496,10 @@ namespace Tetris
                 switch (key)
                 {
                     case Keys.Left:
-                        Move(Direction.Left);
+                        MoveHorizontally(Direction.Left);
                         break;
                     case Keys.Right:
-                        Move(Direction.Right);
+                        MoveHorizontally(Direction.Right);
                         break;
                     case Keys.Up:
                         Rotate();
