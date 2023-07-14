@@ -4,8 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Tetris.Tetraminos;
 using static Tetris.Constants;
+using static Tetris.Movement;
 
 namespace Tetris
 {
@@ -17,15 +17,12 @@ namespace Tetris
         Rectangle background;
         Texture2D backgroundTexture;
 
-        int speed = 2;
-
         int keyDelay = Delay;
         bool keyDelayActive = false;
 
         private KeyboardState keyboardState;
 
         Queue<Block>[] columns;
-        Rectangle[] rectangles;
         Tetramino currentEl;
 
         public Game1()
@@ -34,7 +31,6 @@ namespace Tetris
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
 
-            rectangles = new Rectangle[2];
             // initialize queues for columns
             columns = new Queue<Block>[TotalColumns]; // TODO: fix this
             for (int i = 0; i < columns.Length; i++)
@@ -69,7 +65,7 @@ namespace Tetris
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
@@ -86,7 +82,7 @@ namespace Tetris
             }
 
             // collision detection
-            bool generateNext = MoveVertically();
+            bool generateNext = MoveDown(currentEl, columns, background);
 
             if (generateNext == false)
             {
@@ -222,269 +218,6 @@ namespace Tetris
             base.Draw(gameTime);
         }
 
-        private bool MoveVertically()
-        {
-            Direction direction = Direction.Down;
-
-            if (CheckIfCollidesWithSideBorder(direction)) return true;
-            if (CheckIfCollidesWithBlock(direction)) return true;
-
-            MoveElement(direction);
-            ChangeRow(direction);
-
-            return false;
-        }
-
-        private void MoveHorizontally(Direction direction)
-        {
-            if (keyDelayActive) return;
-            if (CheckIfCollidesWithSideBorder(direction)) return;
-            if (CheckIfCollidesWithBlock(direction)) return;
-
-
-            MoveElement(direction);
-            ChangeColumn(direction);
-
-            keyDelayActive = true;
-        }
-
-        private bool CheckIfCollidesWithSideBorder(Direction direction)
-        {
-            //return _directionMap[direction].Item2.Invoke(element, background);
-
-            if (direction == Direction.Left)
-            {
-                foreach (var block in currentEl.Blocks[0])
-                {
-                    if (block.Column <= 0) return true;
-
-                }
-            }
-            else if (direction == Direction.Right)
-            {
-                foreach (var block in currentEl.Blocks[^1])
-                {
-                    if (block.Column >= TotalColumns - 1) return true;
-                }
-            }
-            else if (direction == Direction.Down)
-            {
-                foreach (var column in currentEl.Blocks)
-                {
-                    if (column[^1].Row >= 19) return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool CheckIfCollidesWithBlock(Direction direction)
-        {
-            //return _directionMap[direction].Item4.Invoke(element, block);
-
-            if (direction == Direction.Left)
-            {
-                foreach (var column in currentEl.Blocks)
-                {
-                    foreach (var block in column)
-                    {
-                        int nextColumn = block.Column - 1;
-                        int row = TotalRows - block.Row - 1;
-
-                        if (row >= columns[nextColumn].Count) continue;
-                        if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            else if (direction == Direction.Right)
-            {
-                foreach (var column in currentEl.Blocks)
-                {
-                    foreach (var block in column)
-                    {
-                        int nextColumn = block.Column + 1;
-                        int row = TotalRows - block.Row - 1;
-
-                        if (row >= columns[nextColumn].Count) continue;
-                        if (columns[nextColumn].ElementAt(TotalRows - block.Row - 1) != null)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            else if (direction == Direction.Down)
-            {
-                foreach (var column in currentEl.Blocks)
-                {
-                    foreach (var block in column)
-                    {
-                        int nextRow = TotalRows - block.Row - 2;
-                        if (columns[block.Column].Count <= nextRow) continue;
-                        if (columns[block.Column].ElementAt(nextRow) != null)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private void MoveElement(Direction direction)
-        {
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    var s = block.Rectangle;
-
-                    if (direction == Direction.Left)
-                    {
-                        s.X = GetUpdatedToLeftX(s);
-                    }
-                    else if (direction == Direction.Right)
-                    {
-                        s.X = GetUpdatedToRightX(s);
-                    }
-                    else if (direction == Direction.Down)
-                    {
-                        s.Y += speed; // if speed < TotalRows
-                    }
-
-                    block.Rectangle = s;
-                }
-            }
-        }
-        
-        private void ChangeRow(Direction direction)
-        {
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    block.Row = TotalRows - (int)Math.Ceiling(((background.Y + background.Height) - block.Rectangle.Y) / (double)TotalRows);
-                }
-            }
-        }
-
-        private void ChangeColumn(Direction direction)
-        {
-            foreach (var column in currentEl.Blocks)
-            {
-                foreach (var block in column)
-                {
-                    if (direction == Direction.Right)
-                    {
-                        block.Column++;
-                    }
-                    else if (direction == Direction.Left)
-                        block.Column--;
-                }
-            }
-        }
-
-        private static int GetUpdatedToLeftX(Rectangle element)
-        {
-            return element.X - 20;
-        }
-
-        private static int GetUpdatedToRightX(Rectangle element)
-        {
-            return element.X + 20;
-        }
-
-        /*private static bool IsLeftCollisionWithBorder(Rectangle element, Rectangle background)
-        {
-            return element.X < background.X;
-        }
-
-        private static bool IsRightCollisionWithBorder(Rectangle element, Rectangle background)
-        {
-            return element.X + element.Width > background.X + background.Width;
-        }
-
-        private static int GetPrevColumn(Tetramino element)
-        {
-            return element.InitialColumn - 1;
-        }
-
-        private static int GetNextColumn(Tetramino element)
-        {
-            return element.InitialColumn + 1;
-        }
-
-        private static int GetColumnAfterElement(Tetramino element)
-        {
-            //int elementHWidthInBlocks = element.Width / BlockDimension;
-            int elementHWidthInBlocks = 0; // TODO: remove this
-            return element.InitialColumn + elementHWidthInBlocks;
-        }
-
-        private static bool IsLeftCollisionWithBLock(Rectangle element, Rectangle block)
-        {
-            return element.X <= block.X + block.Width;
-        }
-
-        private static bool IsRightCollisionWithBlock(Rectangle element, Rectangle block)
-        {
-            return element.X + element.Width >= block.X;
-        }*/
-
-        /*private Dictionary<Direction, Tuple<
-            Func<Rectangle, int>,
-            Func<Rectangle, Rectangle, bool>, 
-            Func<Tetramino, int>,
-            Func<Rectangle, Rectangle, bool>,
-            Func<Tetramino, int>
-            >> _directionMap = new()
-        {
-            { Direction.Left, new Tuple<
-                Func<Rectangle, int>,
-                Func<Rectangle, Rectangle, bool>,
-                Func<Tetramino, int>,
-                Func<Rectangle, Rectangle, bool>,
-                Func<Tetramino, int>
-                >(GetUpdatedToLeftX, IsLeftCollisionWithBorder, GetPrevColumn, 
-                IsLeftCollisionWithBLock, GetPrevColumn) },
-            { Direction.Right, new Tuple<
-                Func<Rectangle, int>,
-                Func<Rectangle, Rectangle, bool>,
-                Func<Tetramino, int>,
-                Func<Rectangle, Rectangle, bool>,
-                Func<Tetramino, int>
-                >(GetUpdatedToRightX, IsRightCollisionWithBorder, GetColumnAfterElement, 
-                IsRightCollisionWithBlock, GetNextColumn) }
-        };
-
-        private int GetUpdatedX(Direction direction, Rectangle element)
-        {
-            return _directionMap[direction].Item1.Invoke(element);
-        }*/
-
-        /*private int GetAdjacentColumnIndexToElement(Direction direction, Tetramino element)
-        {
-            return _directionMap[direction].Item3.Invoke(element);
-        }
-
-        
-
-        private int GetAdjacentColumn(Direction direction, Tetramino element)
-        {
-            return _directionMap[direction].Item5.Invoke(element);
-        }*/
-
-        private enum Direction
-        {
-            Left,
-            Right,
-            Down
-        }
-
         private void HandleInput()
         {
             keyboardState = Keyboard.GetState();
@@ -496,10 +229,10 @@ namespace Tetris
                 switch (key)
                 {
                     case Keys.Left:
-                        MoveHorizontally(Direction.Left);
+                        MoveHorizontally(currentEl, columns, Direction.Left, ref keyDelayActive);
                         break;
                     case Keys.Right:
-                        MoveHorizontally(Direction.Right);
+                        MoveHorizontally(currentEl, columns, Direction.Right, ref keyDelayActive);
                         break;
                     case Keys.Up:
                         Rotate();
@@ -581,11 +314,4 @@ namespace Tetris
             keyDelayActive = true;
         }
     }
-}
-
-enum TetraminoType
-{
-    Straight,
-    Square,
-    Block
 }

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace Tetris.Tetraminos
+namespace Tetris
 {
     internal abstract class Tetramino
     {

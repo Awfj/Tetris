@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Tetris.Tetraminos
+namespace Tetris
 {
     internal class TetraminoO : Tetramino
     {

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace Tetris.Tetraminos
+namespace Tetris
 {
     internal class TetraminoI : Tetramino
     {

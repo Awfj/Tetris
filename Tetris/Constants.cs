@@ -9,6 +9,8 @@
 
         public const int Delay = 15;
 
+        public const int Speed = 2;
+
         public static int TotalColumns = Constants.BackgroundWidth / Constants.BlockDimension;
         public static int TotalRows = Constants.BackgroundHeight / Constants.BlockDimension;
     }
