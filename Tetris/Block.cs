@@ -5,8 +5,7 @@ namespace Tetris
 {
     internal class Block
     {
-        public int Width { get; set; } = Constants.BlockDimension;
-        public int Height { get; set; } = Constants.BlockDimension;
+        public const int Length = 20;
         public int Column { get; set; }
         public int Row { get; set; }
         public Color Color { get; }
@@ -22,10 +21,15 @@ namespace Tetris
             Rectangle = new(
                 x,
                 y,
-                Width, Height);
+                Length, Length);
 
             Texture = new(graphicsDevice, 1, 1);
             Texture.SetData(new Color[] { Color.White });
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(Texture, Rectangle, Color);
         }
     }
 }

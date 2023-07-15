@@ -13,17 +13,13 @@ namespace Tetris
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-
-        Rectangle background;
-        Texture2D backgroundTexture;
-
-        int keyDelay = Delay;
-        bool keyDelayActive = false;
+        private Background background;
+        private int keyDelay = Delay;
+        private bool keyDelayActive = false;
 
         private KeyboardState keyboardState;
-
-        Queue<Block>[] columns;
-        Tetramino currentEl;
+        private Queue<Block>[] columns;
+        private Tetramino currentEl;
 
         public Game1()
         {
@@ -52,14 +48,7 @@ namespace Tetris
 
             // TODO: use this.Content to load your game content here
 
-            // make the background
-            background = new(
-                GraphicsDevice.Viewport.Width / 2 - BackgroundWidth / 2,
-                GraphicsDevice.Viewport.Height / 2 - BackgroundHeight / 2,
-                BackgroundWidth, BackgroundHeight);
-            backgroundTexture = new(GraphicsDevice, 1, 1);
-            backgroundTexture.SetData(new Color[] { Color.White });
-
+            background = new Background(GraphicsDevice);
             currentEl = RandomizeTetramino();
         }
 
@@ -82,7 +71,7 @@ namespace Tetris
             }
 
             // collision detection
-            bool generateNext = MoveDown(currentEl, columns, background);
+            bool generateNext = MoveDown(currentEl, columns, background.rectangle);
 
             if (generateNext == false)
             {
@@ -112,7 +101,7 @@ namespace Tetris
                                 var bl = currentEl.Blocks[i - currentColumn][b];
 
                                 Rectangle tempRectangle = bl.Rectangle;
-                                tempRectangle.Y = background.Y + BackgroundHeight - BlockDimension * (TotalRows - bl.Row);
+                                tempRectangle.Y = background.rectangle.Y + Background.Height - Block.Length * (TotalRows - bl.Row);
 
                                 bl.Rectangle = tempRectangle;
 
@@ -147,7 +136,7 @@ namespace Tetris
                             Block currentBlock = currentEl.Blocks[i - currentColumn][j - nextRow];
 
                             Rectangle tempRectangle = currentBlock.Rectangle;
-                            tempRectangle.Y = background.Y + BackgroundHeight - BlockDimension * (TotalRows - currentBlock.Row);
+                            tempRectangle.Y = background.rectangle.Y + Background.Height - Block.Length * (TotalRows - currentBlock.Row);
 
                             currentBlock.Rectangle = tempRectangle;
                             columns[i].Enqueue(currentBlock);
@@ -155,32 +144,41 @@ namespace Tetris
                     }
                 }
 
-                // find full rows and remove them
-                int minColumnHeight = FindMinColumnHeight();
-                int count = 0;
-
-                for (int i = 0; i < minColumnHeight; i++)
-                {
-                    bool isRowFull = CheckIfRowIsFull(i - count);
-
-                    if (isRowFull) // TODO: check if works correctly
-                    {
-                        RemoveRow();
-                        count++;
-                    }
-                }
-
-                // when reaches the top border, the game ends
-                if (columns[currentColumn].Count == TotalRows)
-                {
-                    // NOTE: The game didn't end once, when the element reached the top border
-                    throw new NotImplementedException(); // TODO: fix this
-                }
+                RemoveFullRows();
+                if (CheckIfGameFinished(currentColumn)) { }
 
                 currentEl = RandomizeTetramino();
             }
 
             base.Update(gameTime);
+        }
+
+        private void RemoveFullRows()
+        {
+            int minColumnHeight = FindMinColumnHeight();
+            int count = 0;
+
+            for (int i = 0; i < minColumnHeight; i++)
+            {
+                bool isRowFull = CheckIfRowIsFull(i - count);
+
+                if (isRowFull) // TODO: check if works correctly
+                {
+                    RemoveRow();
+                    count++;
+                }
+            }
+        }
+
+        private bool CheckIfGameFinished(int currentColumn)
+        {
+            if (columns[currentColumn].Count == TotalRows)
+            {
+                // NOTE: The game didn't end once, when the element reached the top border
+                throw new NotImplementedException(); // TODO: fix this
+            }
+
+            return false;
         }
 
         protected override void Draw(GameTime gameTime)
@@ -190,7 +188,7 @@ namespace Tetris
             // TODO: Add your drawing code here
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(backgroundTexture, background, Color.Pink);
+            background.Draw(_spriteBatch);
 
             // draw the blocks
             foreach (var column in columns)
@@ -199,7 +197,7 @@ namespace Tetris
                 {
                     if (block != null)
                     {
-                        _spriteBatch.Draw(block.Texture, block.Rectangle, block.Color);
+                        block.Draw(_spriteBatch);
                     }
                 }
             }
@@ -209,7 +207,7 @@ namespace Tetris
             {
                 foreach (var block in column)
                 {
-                    _spriteBatch.Draw(block.Texture, block.Rectangle, currentEl.Color);
+                    block.Draw(_spriteBatch);
                 }
             }
 
@@ -284,7 +282,7 @@ namespace Tetris
                     {
                         Block block = columns[i].ElementAt(j);
                         Rectangle rect = block.Rectangle;
-                        rect.Y += BlockDimension;
+                        rect.Y += Block.Length;
                         block.Rectangle = rect;
                     }
                 }
@@ -298,11 +296,11 @@ namespace Tetris
             switch (type)
             {
                 case 0:
-                    return new TetraminoI(GraphicsDevice, background);
+                    return new TetraminoI(GraphicsDevice, background.rectangle);
                 case 1:
-                    return new TetraminoZ(GraphicsDevice, background);
+                    return new TetraminoZ(GraphicsDevice, background.rectangle);
                 default:
-                    return new TetraminoO(GraphicsDevice, background);
+                    return new TetraminoO(GraphicsDevice, background.rectangle);
             }
         }
 

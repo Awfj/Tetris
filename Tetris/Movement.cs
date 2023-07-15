@@ -7,6 +7,8 @@ namespace Tetris
 {
     internal static class Movement
     {
+        public const int Speed = 2;
+
         public static bool MoveDown(Tetramino element, Queue<Block>[] columns, Rectangle background)
         {
             Direction direction = Direction.Down;

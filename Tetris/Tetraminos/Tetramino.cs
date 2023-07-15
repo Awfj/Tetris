@@ -32,8 +32,8 @@ namespace Tetris
                     if (Check(Skip, i, j)) continue;
 
                     Block newBlock = new(
-                        background.X + Constants.BlockDimension * (InitialColumn + i),
-                            background.Y + Constants.BlockDimension * (InitialRow + j),
+                        background.X + Block.Length * (InitialColumn + i),
+                            background.Y + Block.Length * (InitialRow + j),
                             InitialColumn + i,
                             InitialRow + j,
                             color,
@@ -58,8 +58,8 @@ namespace Tetris
                     if (Check(Skip, i, j)) continue;
 
                     Block newBlock = new(
-                            block.Rectangle.X + Constants.BlockDimension * i,
-                            block.Rectangle.Y + Constants.BlockDimension * j,
+                            block.Rectangle.X + Block.Length * i,
+                            block.Rectangle.Y + Block.Length * j,
                             block.Column + i,
                             block.Row + j,
                             color,
