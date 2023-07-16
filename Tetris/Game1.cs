@@ -16,6 +16,7 @@ namespace Tetris
         private Background background;
         private int keyDelay = Delay;
         private bool keyDelayActive = false;
+        private Queue<int> rowsToRemove = new();
 
         private KeyboardState keyboardState;
         private Queue<Block>[] columns;
@@ -156,18 +157,49 @@ namespace Tetris
         private void RemoveFullRows()
         {
             int minColumnHeight = FindMinColumnHeight();
-            int count = 0;
 
             for (int i = 0; i < minColumnHeight; i++)
             {
-                bool isRowFull = CheckIfRowIsFull(i - count);
-
-                if (isRowFull) // TODO: check if works correctly
+                if (CheckIfRowIsFull(i))
                 {
-                    RemoveRow();
-                    count++;
+                    rowsToRemove.Enqueue(i);
                 }
             }
+
+            if (rowsToRemove.Count == 0) return;
+
+            for (int i = 0; i < columns.Length; i++)
+            {
+                Queue<Block> temp = new();
+                int count = 0;
+                int columnsCount = columns[i].Count;
+
+                for (int j = 0; j < columnsCount; j++)
+                {
+                    Block block = columns[i].Dequeue();
+
+                    if (count < rowsToRemove.Count && j == rowsToRemove.ElementAt(count))
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        if (block is not null)
+                        {
+                            Rectangle rect = block.Rectangle;
+                            rect.Y += Block.Length * count;
+                            block.Rectangle = rect;
+                            block.Row += count;
+                        }
+
+                        temp.Enqueue(block);
+                    }
+                }
+
+                columns[i] = temp;
+            }
+
+            rowsToRemove.Clear();
         }
 
         private bool CheckIfGameFinished(int currentColumn)
@@ -269,11 +301,12 @@ namespace Tetris
             return true;
         }
 
-        private void RemoveRow() // TODO: check if workds correctly
+        private void RemoveRow() // TODO: check if works correctly
         {
             for (int i = 0; i < columns.Length; i++)
             {
-                // remove filled row from every adjacentColumnIndex
+                //if (rowsToRemove.Count == 0) return;
+
                 columns[i].Dequeue();
 
                 for (int j = 0; j < columns[i].Count; j++)
