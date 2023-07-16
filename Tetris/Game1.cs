@@ -291,17 +291,18 @@ namespace Tetris
 
         private Tetramino RandomizeTetramino()
         {
-            int type = new Random().Next(0, 3);
+            int type = new Random().Next(0, 7);
 
-            switch (type)
+            return type switch
             {
-                case 0:
-                    return new TetraminoI(GraphicsDevice, background.rectangle);
-                case 1:
-                    return new TetraminoZ(GraphicsDevice, background.rectangle);
-                default:
-                    return new TetraminoO(GraphicsDevice, background.rectangle);
-            }
+                0 => new TetraminoI(GraphicsDevice, background.rectangle),
+                1 => new TetraminoZ(GraphicsDevice, background.rectangle),
+                2 => new TetraminoJ(GraphicsDevice, background.rectangle),
+                3 => new TetraminoL(GraphicsDevice, background.rectangle),
+                4 => new TetraminoS(GraphicsDevice, background.rectangle),
+                5 => new TetraminoT(GraphicsDevice, background.rectangle),
+                _ => new TetraminoO(GraphicsDevice, background.rectangle),
+            };
         }
 
         private void Rotate() // TODO: restrict rotation when it collides with the border

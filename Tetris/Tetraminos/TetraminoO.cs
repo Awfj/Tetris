@@ -10,15 +10,15 @@ namespace Tetris
             Color = Color.Yellow;
             Type = 0;
 
-            Make(graphicsDevice, Color, background);
+            Initialize(graphicsDevice, Color, background);
         }
 
         public override void Rotate(GraphicsDevice graphicsDevice)
         {
-            Make(graphicsDevice, Color, Blocks[0][0]);
+            Initialize(graphicsDevice, Color, Blocks[0][0]);
         }
 
-        protected override void Set()
+        protected override void SetProperties()
         {
             Columns = 2;
             Rows = 2;

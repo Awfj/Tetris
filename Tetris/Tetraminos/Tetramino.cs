@@ -15,13 +15,12 @@ namespace Tetris
         protected int Type { get; set; }
         protected int[,] Skip { get; set; } = new int[0, 0];
 
-        protected abstract void Set();
+        protected abstract void SetProperties();
         public abstract void Rotate(GraphicsDevice graphicsDevice);
 
-
-        protected void Make(GraphicsDevice graphicsDevice, Color color, Rectangle background)
+        protected void Initialize(GraphicsDevice graphicsDevice, Color color, Rectangle background)
         {
-            Set();
+            SetProperties();
 
             for (int i = 0; i < Columns; i++)
             {
@@ -29,7 +28,7 @@ namespace Tetris
 
                 for (int j = 0; j < Rows; j++)
                 {
-                    if (Check(Skip, i, j)) continue;
+                    if (ShouldInitializeBlock(Skip, i, j)) continue;
 
                     Block newBlock = new(
                         background.X + Block.Length * (InitialColumn + i),
@@ -44,10 +43,10 @@ namespace Tetris
             }
         }
 
-        protected void Make(GraphicsDevice graphicsDevice, Color color, Block block)
+        protected void Initialize(GraphicsDevice graphicsDevice, Color color, Block block)
         {
             Blocks = new();
-            Set();
+            SetProperties();
 
             for (int i = 0; i < Columns; i++)
             {
@@ -55,7 +54,7 @@ namespace Tetris
 
                 for (int j = 0; j < Rows; j++)
                 {
-                    if (Check(Skip, i, j)) continue;
+                    if (ShouldInitializeBlock(Skip, i, j)) continue;
 
                     Block newBlock = new(
                             block.Rectangle.X + Block.Length * i,
@@ -70,7 +69,7 @@ namespace Tetris
             }
         }
 
-        private static bool Check(int[,] skip, int i, int j)
+        private static bool ShouldInitializeBlock(int[,] skip, int i, int j)
         {
             for (int k = 0; k < skip.GetLength(0); k++)
             {

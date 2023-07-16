@@ -6,32 +6,62 @@ namespace Tetris
 {
     internal class TetraminoZ : Tetramino
     {
-
         public TetraminoZ(GraphicsDevice graphicsDevice, Rectangle background)
         {
             Color = Color.Red;
-            Type = new Random().Next(0, 2);
+            Type = new Random().Next(0, 4);
 
-            Make(graphicsDevice, Color, background);
+            Initialize(graphicsDevice, Color, background);
         }
 
         public override void Rotate(GraphicsDevice graphicsDevice)
         {
-            if (Type == 0) Type = 1;
-            else Type = 0;
+            Block block = Blocks[0][0];
+            Rectangle rectangle = block.Rectangle;
 
-            Make(graphicsDevice, Color, Blocks[0][0]);
+            switch (Type)
+            {
+                case 1:
+                    Type = 2;
+
+                    rectangle.X -= Block.Length;
+                    block.Column -= 1;
+                    block.Row += 1;
+                    break;
+                case 2:
+                    Type = 3;
+
+                    block.Row -= 1;
+                    break;
+                case 3:
+                    Type = 0;
+
+                    block.Row += 1;
+                    break;
+                default:
+                    Type = 1;
+
+                    rectangle.X += Block.Length;
+                    block.Column += 1;
+                    block.Row -= 1;
+                    break;
+            }
+
+            Blocks[0][0].Rectangle = rectangle;
+            Initialize(graphicsDevice, Color, Blocks[0][0]);
         }
 
-        protected override void Set()
+        protected override void SetProperties()
         {
             switch (Type)
             {
                 case 1:
+                case 3:
                     Columns = 2;
                     Rows = 3;
                     Skip = new[,] { { 0, 0 }, { 1, 2 } };
                     break;
+                case 2:
                 default:
                     Columns = 3;
                     Rows = 2;
