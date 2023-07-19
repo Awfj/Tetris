@@ -154,7 +154,7 @@ namespace Tetris
             base.Update(gameTime);
         }
 
-        private void RemoveFullRows()
+        private void FindFullRows()
         {
             int minColumnHeight = FindMinColumnHeight();
 
@@ -165,31 +165,43 @@ namespace Tetris
                     rowsToRemove.Enqueue(i);
                 }
             }
+        }
+
+        private static void MoveBlock(Block block, int rows)
+        {
+            Rectangle rect = block.Rectangle;
+            rect.Y += Block.Length * rows;
+            block.Rectangle = rect;
+            block.Row += rows;
+        }
+
+        private void RemoveFullRows()
+        {
+            FindFullRows();
 
             if (rowsToRemove.Count == 0) return;
 
             for (int i = 0; i < columns.Length; i++)
             {
+                // temporary queue to store the moved blocks
                 Queue<Block> temp = new();
-                int count = 0;
-                int columnsCount = columns[i].Count;
+                int rows = columns[i].Count;
+                int removedRows = 0;
 
-                for (int j = 0; j < columnsCount; j++)
+                for (int j = 0; j < rows; j++)
                 {
                     Block block = columns[i].Dequeue();
 
-                    if (count < rowsToRemove.Count && j == rowsToRemove.ElementAt(count))
+                    if (removedRows < rowsToRemove.Count && 
+                        j == rowsToRemove.ElementAt(removedRows))
                     {
-                        count++;
+                        removedRows++;
                     }
                     else
                     {
                         if (block is not null)
                         {
-                            Rectangle rect = block.Rectangle;
-                            rect.Y += Block.Length * count;
-                            block.Rectangle = rect;
-                            block.Row += count;
+                            MoveBlock(block, removedRows);
                         }
 
                         temp.Enqueue(block);
