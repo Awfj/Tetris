@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Taskbar;
 using static Tetris.Constants;
 using static Tetris.Movement;
 
@@ -83,64 +84,24 @@ namespace Tetris
                 int currentColumn = currentEl.Blocks[0][0].Column;
                 for (int i = currentColumn; i < currentColumn + currentEl.Blocks.Count; i++) // TODO: fix this
                 {
+                    List<Block> blocksColumn = currentEl.Blocks[i - currentColumn];
+                    int backgroundBottomY = background.rectangle.Y + Background.Height;
+
                     // if the current row already exists
                     // for nesting
                     if (TotalRows - currentEl.Blocks[i - currentColumn][0].Row <= columns[i].Count)
                     {
                         // add the current element to the block
-
-                        var temp = new Queue<Block>();
-
-                        int n = columns[i].Count;
-                        for (int j = 0, b = currentEl.Blocks[i - currentColumn].Count - 1; j < n; j++)
-                        {
-                            var block = columns[i].Dequeue();
-
-                            if (b >= 0 && temp.Count == TotalRows - currentEl.Blocks[i - currentColumn][b].Row - 1)
-                            {
-                                var bl = currentEl.Blocks[i - currentColumn][b];
-
-                                Rectangle tempRectangle = bl.Rectangle;
-                                tempRectangle.Y = background.rectangle.Y + Background.Height - Block.Length * (TotalRows - bl.Row);
-
-                                bl.Rectangle = tempRectangle;
-
-                                temp.Enqueue(bl);
-                                b--;
-                            }
-                            else
-                            {
-                                temp.Enqueue(block);
-                            }
-                        }
-
-                        columns[i] = temp;
+                        BlocksMatrix.NestBlocks(blocksColumn, ref columns[i], backgroundBottomY);
                     }
                     else
                     {
                         int rowCount = currentEl.Blocks[i - currentColumn].Count;
                         int nextRow = currentEl.Blocks[i - currentColumn][^1].Row + 1;
 
-                        // add null to the block to level the rows
-                        for (int j = 0; j < rowCount; j++)
-                        {
-                            while (columns[i].Count < TotalRows - nextRow)
-                            {
-                                columns[i].Enqueue(null);
-                            }
-                        }
-
-                        // add block to the block
-                        for (int j = nextRow + rowCount - 1; j >= nextRow; j--)
-                        {
-                            Block currentBlock = currentEl.Blocks[i - currentColumn][j - nextRow];
-
-                            Rectangle tempRectangle = currentBlock.Rectangle;
-                            tempRectangle.Y = background.rectangle.Y + Background.Height - Block.Length * (TotalRows - currentBlock.Row);
-
-                            currentBlock.Rectangle = tempRectangle;
-                            columns[i].Enqueue(currentBlock);
-                        }
+                        // add null to the columns to level the rows
+                        BlocksMatrix.LevelRows(columns[i], rowCount, nextRow);
+                        BlocksMatrix.AddBlocks(blocksColumn, columns[i], rowCount, nextRow, backgroundBottomY);
                     }
                 }
 

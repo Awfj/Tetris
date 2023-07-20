@@ -6,6 +6,7 @@ namespace Tetris
 {
     internal abstract class Tetramino
     {
+        // first list is for columns, second - for rows
         public List<List<Block>> Blocks { get; set; } = new();
         public Color Color { get; set; } = Color.White;
         protected int InitialColumn { get; } = 6;
