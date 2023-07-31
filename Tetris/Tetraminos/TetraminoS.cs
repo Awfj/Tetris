@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 
 namespace Tetris
 {
@@ -14,7 +15,7 @@ namespace Tetris
             Initialize(graphicsDevice, Color, background);
         }
 
-        public override void Rotate(GraphicsDevice graphicsDevice)
+        public override void Rotate(GraphicsDevice graphicsDevice, Queue<Block>[] columnse)
         {
             Block block = Blocks[0][0];
             Rectangle rectangle = block.Rectangle;
@@ -57,21 +58,35 @@ namespace Tetris
 
         protected override void SetProperties()
         {
-            switch (Type)
+            (int column, int row) = GetLocation();
+            Columns = column;
+            Rows = row;
+
+            Skip = Type switch
             {
-                case 1:
-                case 3:
-                    Columns = 2;
-                    Rows = 3;
-                    Skip = new[,] { { 0, 2 }, { 1, 0 } };
-                    break;
-                case 2:
-                default:
-                    Columns = 3;
-                    Rows = 2;
-                    Skip = new[,] { { 0, 0 }, { 2, 1 } };
-                    break;
-            }
+                1 or 3 => new[,] { { 0, 2 }, { 1, 0 } },
+                _ => new[,] { { 0, 0 }, { 2, 1 } },
+            };
+        }
+
+        private (int column, int row) GetLocation()
+        {
+            return Type switch
+            {
+                1 or 3 => (2, 3),
+                _ => (3, 2),
+            };
+        }
+
+        private int GetType()
+        {
+            return Type switch
+            {
+                1 => 2,
+                2 => 3,
+                3 => 0,
+                _ => 1,
+            };
         }
     }
 }

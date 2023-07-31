@@ -3,8 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Taskbar;
 using static Tetris.Constants;
 using static Tetris.Movement;
 
@@ -14,6 +12,8 @@ namespace Tetris
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private GameManager _gameManager;
+
         private Background background;
         private int keyDelay = Delay;
         private bool keyDelayActive = false;
@@ -39,6 +39,7 @@ namespace Tetris
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            Globals.Content = Content;
 
             base.Initialize();
         }
@@ -48,6 +49,8 @@ namespace Tetris
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            Globals.SpriteBatch = _spriteBatch;
+            _gameManager = new GameManager();
 
             background = new Background(GraphicsDevice);
             currentEl = RandomizeTetramino();
@@ -186,14 +189,16 @@ namespace Tetris
         private Tetramino RandomizeTetramino()
         {
             int type = new Random().Next(0, 7);
-            return TetraminoFactory.GetTetramino(GraphicsDevice, background.rectangle, type);
+            //return TetraminoFactory.GetTetramino(GraphicsDevice, background.rectangle, type);
+            return new TetraminoI(GraphicsDevice, background.rectangle);
         }
 
         private void Rotate() // TODO: restrict rotation when it collides with the border
         {
-            if (keyDelayActive) return;
+            if (keyDelayActive)
+                return;
 
-            currentEl.Rotate(GraphicsDevice);
+            currentEl.Rotate(GraphicsDevice, columns);
             keyDelayActive = true;
         }
     }

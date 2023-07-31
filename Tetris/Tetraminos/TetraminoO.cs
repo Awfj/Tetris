@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace Tetris
 {
@@ -13,7 +14,7 @@ namespace Tetris
             Initialize(graphicsDevice, Color, background);
         }
 
-        public override void Rotate(GraphicsDevice graphicsDevice)
+        public override void Rotate(GraphicsDevice graphicsDevice, Queue<Block>[] columns)
         {
             Initialize(graphicsDevice, Color, Blocks[0][0]);
         }

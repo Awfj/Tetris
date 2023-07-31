@@ -17,7 +17,7 @@ namespace Tetris
         protected int[,] Skip { get; set; } = new int[0, 0];
 
         protected abstract void SetProperties();
-        public abstract void Rotate(GraphicsDevice graphicsDevice);
+        public abstract void Rotate(GraphicsDevice graphicsDevice, Queue<Block>[] columns);
 
         protected void Initialize(GraphicsDevice graphicsDevice, Color color, Rectangle background)
         {
