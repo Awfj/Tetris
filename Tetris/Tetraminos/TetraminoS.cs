@@ -7,15 +7,15 @@ namespace Tetris
 {
     internal class TetraminoS : Tetramino
     {
-        public TetraminoS(GraphicsDevice graphicsDevice, Rectangle background)
+        public TetraminoS(Rectangle background)
         {
             Color = Color.Green;
             Type = new Random().Next(0, 4);
 
-            Initialize(graphicsDevice, Color, background);
+            Initialize(Color, background);
         }
 
-        public override void Rotate(GraphicsDevice graphicsDevice, Queue<Block>[] columnse)
+        public override void Rotate(Queue<Block>[] columnse)
         {
             Block block = Blocks[0][0];
             Rectangle rectangle = block.Rectangle;
@@ -53,7 +53,7 @@ namespace Tetris
             }
 
             Blocks[0][0].Rectangle = rectangle;
-            Initialize(graphicsDevice, Color, Blocks[0][0]);
+            Initialize(Color, Blocks[0][0]);
         }
 
         protected override void SetProperties()
@@ -78,7 +78,7 @@ namespace Tetris
             };
         }
 
-        private int GetType()
+        private int GetNextType()
         {
             return Type switch
             {

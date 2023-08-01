@@ -27,9 +27,9 @@ namespace Tetris
             Texture.SetData(new Color[] { Color.White });
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw()
         {
-            spriteBatch.Draw(Texture, Rectangle, Color);
+            Globals.SpriteBatch.Draw(Texture, Rectangle, Color);
         }
     }
 }

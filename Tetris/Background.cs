@@ -22,9 +22,9 @@ namespace Tetris
             texture.SetData(new Color[] { Color.White });
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw()
         {
-            spriteBatch.Draw(texture, rectangle, Color.Pink);
+            Globals.SpriteBatch.Draw(texture, rectangle, Color.Pink);
         }
     }
 }

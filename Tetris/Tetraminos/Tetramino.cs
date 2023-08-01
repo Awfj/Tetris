@@ -17,9 +17,9 @@ namespace Tetris
         protected int[,] Skip { get; set; } = new int[0, 0];
 
         protected abstract void SetProperties();
-        public abstract void Rotate(GraphicsDevice graphicsDevice, Queue<Block>[] columns);
+        public abstract void Rotate(Queue<Block>[] columns);
 
-        protected void Initialize(GraphicsDevice graphicsDevice, Color color, Rectangle background)
+        protected void Initialize(Color color, Rectangle background)
         {
             SetProperties();
 
@@ -37,14 +37,14 @@ namespace Tetris
                             InitialColumn + i,
                             InitialRow + j,
                             color,
-                            graphicsDevice);
+                            Globals.GraphicsDevice);
 
                     Blocks[i].Add(newBlock);
                 }
             }
         }
 
-        protected void Initialize(GraphicsDevice graphicsDevice, Color color, Block block)
+        protected void Initialize(Color color, Block block)
         {
             Blocks = new();
             SetProperties();
@@ -63,7 +63,7 @@ namespace Tetris
                             block.Column + i,
                             block.Row + j,
                             color,
-                            graphicsDevice);
+                            Globals.GraphicsDevice);
 
                     Blocks[i].Add(newBlock);
                 }

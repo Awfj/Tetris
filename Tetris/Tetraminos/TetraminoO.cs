@@ -6,17 +6,17 @@ namespace Tetris
 {
     internal class TetraminoO : Tetramino
     {
-        public TetraminoO(GraphicsDevice graphicsDevice, Rectangle background)
+        public TetraminoO(Rectangle background)
         {
             Color = Color.Yellow;
             Type = 0;
 
-            Initialize(graphicsDevice, Color, background);
+            Initialize(Color, background);
         }
 
-        public override void Rotate(GraphicsDevice graphicsDevice, Queue<Block>[] columns)
+        public override void Rotate(Queue<Block>[] columns)
         {
-            Initialize(graphicsDevice, Color, Blocks[0][0]);
+            Initialize(Color, Blocks[0][0]);
         }
 
         protected override void SetProperties()
