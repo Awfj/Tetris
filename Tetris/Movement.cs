@@ -9,7 +9,7 @@ namespace Tetris
     {
         public const int Speed = 2;
 
-        public static bool MoveDown(Tetramino element, Queue<Block>[] columns, Rectangle background)
+        public static bool MoveDown(ITetramino element, Queue<Block>[] columns, Rectangle background)
         {
             Direction direction = Direction.Down;
 
@@ -22,7 +22,7 @@ namespace Tetris
             return false;
         }
 
-        public static void MoveHorizontally(Tetramino element, Queue<Block>[] columns, Direction direction, ref bool keyDelayActive)
+        public static void MoveHorizontally(ITetramino element, Queue<Block>[] columns, Direction direction, ref bool keyDelayActive)
         {
             if (keyDelayActive) return;
             if (BorderCollision.CheckIfCollidesWithSideBorder(element, direction)) return;
@@ -35,7 +35,7 @@ namespace Tetris
             keyDelayActive = true;
         }
 
-        private static void MoveElement(Tetramino element, Direction direction)
+        private static void MoveElement(ITetramino element, Direction direction)
         {
             foreach (var column in element.Blocks)
             {
@@ -71,7 +71,7 @@ namespace Tetris
             return element.X + 20;
         }
 
-        private static void ChangeRow(Tetramino element, Rectangle background)
+        private static void ChangeRow(ITetramino element, Rectangle background)
         {
             foreach (var column in element.Blocks)
             {
@@ -82,7 +82,7 @@ namespace Tetris
             }
         }
 
-        private static void ChangeColumn(Tetramino element, Direction direction)
+        private static void ChangeColumn(ITetramino element, Direction direction)
         {
             foreach (var column in element.Blocks)
             {

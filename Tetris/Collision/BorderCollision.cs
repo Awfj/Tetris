@@ -2,7 +2,7 @@
 {
     internal static class BorderCollision
     {
-        public static bool CheckIfCollidesWithSideBorder(Tetramino element, Direction direction)
+        public static bool CheckIfCollidesWithSideBorder(ITetramino element, Direction direction)
         {
             return direction switch
             {
@@ -13,7 +13,7 @@
             };
         }
 
-        private static bool CheckIfCollidesWithSideBorderLeft(Tetramino element)
+        private static bool CheckIfCollidesWithSideBorderLeft(ITetramino element)
         {
             foreach (var block in element.Blocks[0])
             {
@@ -22,7 +22,7 @@
             return false;
         }
 
-        private static bool CheckIfCollidesWithSideBorderRight(Tetramino element)
+        private static bool CheckIfCollidesWithSideBorderRight(ITetramino element)
         {
             foreach (var block in element.Blocks[^1])
             {
@@ -31,7 +31,7 @@
             return false;
         }
 
-        private static bool CheckIfCollidesWithSideBorderDown(Tetramino element)
+        private static bool CheckIfCollidesWithSideBorderDown(ITetramino element)
         {
             foreach (var column in element.Blocks)
             {

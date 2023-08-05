@@ -6,7 +6,7 @@ namespace Tetris
 {
     internal static class BlockCollision
     {
-        public static bool CheckIfCollidesWithBlock(Tetramino element, Queue<Block>[] columns, Direction direction)
+        public static bool CheckIfCollidesWithBlock(ITetramino element, Queue<Block>[] columns, Direction direction)
         {
             return direction switch
             {
@@ -17,7 +17,7 @@ namespace Tetris
             };
         }
 
-        private static bool CheckIfCollidesWithBlockLeft(Tetramino element, Queue<Block>[] columns)
+        private static bool CheckIfCollidesWithBlockLeft(ITetramino element, Queue<Block>[] columns)
         {
             foreach (var column in element.Blocks)
             {
@@ -36,7 +36,7 @@ namespace Tetris
             return false;
         }
 
-        private static bool CheckIfCollidesWithBlockRight(Tetramino element, Queue<Block>[] columns)
+        private static bool CheckIfCollidesWithBlockRight(ITetramino element, Queue<Block>[] columns)
         {
             foreach (var column in element.Blocks)
             {
@@ -55,7 +55,7 @@ namespace Tetris
             return false;
         }
 
-        private static bool CheckIfCollidesWithBlockDown(Tetramino element, Queue<Block>[] columns)
+        private static bool CheckIfCollidesWithBlockDown(ITetramino element, Queue<Block>[] columns)
         {
             foreach (var column in element.Blocks)
             {
